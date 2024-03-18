@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,12 +19,13 @@ import java.io.Serializable;
  * @version 1.0
  * @since 17/03/2024
  */
+@AllArgsConstructor
 @Getter
 @Setter
 public class DroneRequestDTO implements Serializable {
 
     @JsonProperty("serialNumber")
-    @Size(min = 1, max = 5, message = AppConstants.SERIAL_NUMBER_LENGTH_EXCEED)
+    @Size(min = 1, max = 100, message = AppConstants.SERIAL_NUMBER_LENGTH_EXCEED)
     private String serialNumber;
 
     @JsonProperty("model")
