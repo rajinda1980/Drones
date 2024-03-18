@@ -23,6 +23,7 @@
     <slf4j.version>2.0.7</slf4j.version>
     <lambok.version>1.18.28</lambok.version>
     <data.model>1.0-SNAPSHOT</data.model>
+    <spring.validation>3.1.2</spring.validation>
   </properties>
 
   <dependencies>
@@ -71,29 +72,38 @@
     </dependency>
     <!-- Data model - End -->
 
+    <!-- Spring validation dependency - Start -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+      <version>${spring.validation}</version>
+    </dependency>
+    <!-- Spring validation dependency - End -->
+
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>2.7.3</version>
+        <configuration>
+          <mainClass>com.musala.drones.DronesApp</mainClass>
+        </configuration>
         <executions>
           <execution>
-            <id>compile</id>
-            <phase>compile</phase>
             <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>testCompile</id>
-            <phase>test-compile</phase>
-            <goals>
-              <goal>testCompile</goal>
+              <goal>repackage</goal>
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <version>2.7.1</version>
       </plugin>
     </plugins>
   </build>
