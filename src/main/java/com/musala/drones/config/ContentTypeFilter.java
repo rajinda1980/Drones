@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -29,7 +30,7 @@ public class ContentTypeFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
-        if (StringUtils.isBlank(contentType) || !contentType.equalsIgnoreCase(AppConstants.CONTENT_TYPE)) {
+        if (StringUtils.isBlank(contentType) || !contentType.contains(AppConstants.CONTENT_TYPE)) {
             log.info("Invalid request is received. Content-Type : {}", contentType);
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             response.getWriter().write("Invalid Content-Type. Content-Type must be application/json");

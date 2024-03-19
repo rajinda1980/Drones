@@ -80,6 +80,13 @@
     </dependency>
     <!-- Spring validation dependency - End -->
 
+    <!-- For GSON - Start -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
+    <!-- For GSON - End -->
+
   </dependencies>
 
   <build>

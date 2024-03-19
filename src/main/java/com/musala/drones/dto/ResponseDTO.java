@@ -3,6 +3,7 @@ package com.musala.drones.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -15,7 +16,8 @@ import java.time.LocalDateTime;
  * @since 17/03/2024
  */
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Getter
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponseDTO implements Serializable {
 
     @JsonProperty("createdDate")

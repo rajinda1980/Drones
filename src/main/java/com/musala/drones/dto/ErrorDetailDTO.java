@@ -2,6 +2,7 @@ package com.musala.drones.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -14,6 +15,7 @@ import java.io.Serializable;
  * @since 17/03/2024
  */
 @Setter
+@Getter
 public class ErrorDetailDTO extends ErrorDetailHeaderDTO implements Serializable {
 
     @JsonProperty("fieldName")
