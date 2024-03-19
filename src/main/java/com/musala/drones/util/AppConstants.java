@@ -17,7 +17,7 @@ public final class AppConstants {
     public static final String INVALID_MODEL = "The model must be one of the following values: Lightweight, Middleweight, Cruiserweight, or Heavyweight";
     public static final String DRONE_WEIGHT_LOW = "The drone weight must be greater than or equal to 1 gram";
     public static final String DRONE_WEIGHT_EXCEEDED = "The drone weight must be less than or equal to 500 grams";
-    public static final String BATTERY_CAPACITY_LOW = "The battery capacity must be greater than or equal to 100";
+    public static final String BATTERY_CAPACITY_LOW = "The battery capacity must be greater than or equal to 1";
     public static final String BATTERY_CAPACITY_EXCEEDED = "The battery capacity must be less than or equal to 100";
 
     public static final String DRONE_REGISTERED = "The drone has been registered";

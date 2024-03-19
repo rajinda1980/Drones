@@ -50,7 +50,7 @@ public class RegistrationServiceTest {
     @DisplayName("Test the functionality for registering a drone - Happy path")
     void testRegisterDrone_success() throws Exception {
         Drone drone = getDrone();
-        DroneRequestDTO requestDTO = getRequestDRO();
+        DroneRequestDTO requestDTO = getRequestDTO();
         Mockito.when(droneRepository.findById(requestDTO.getSerialNumber())).thenReturn(Optional.empty());
 
         ResponseDTO responseDTO = registrationService.registerDrone(requestDTO);
@@ -71,7 +71,7 @@ public class RegistrationServiceTest {
     @DisplayName("Test the functionality for registering a drone - Exception path. Prerequisites : Drone is registered to given serial number")
     void testRegisterDrone_DroneExist() throws Exception {
         Drone drone = getDrone();
-        DroneRequestDTO requestDTO = getRequestDRO();
+        DroneRequestDTO requestDTO = getRequestDTO();
         Mockito.when(droneRepository.findById(requestDTO.getSerialNumber())).thenReturn(Optional.of(drone));
 
         DroneRegistrationException exception =
@@ -88,7 +88,7 @@ public class RegistrationServiceTest {
         return drone;
     }
 
-    private DroneRequestDTO getRequestDRO() {
+    private DroneRequestDTO getRequestDTO() {
         DroneRequestDTO requestDTO = new DroneRequestDTO("D001", "Middleweight", 150, 100);
         return requestDTO;
     }

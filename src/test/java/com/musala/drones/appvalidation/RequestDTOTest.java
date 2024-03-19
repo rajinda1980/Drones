@@ -18,6 +18,13 @@ import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Junit test class to test DTO
+ *
+ * @author Rajinda
+ * @version 1.0
+ * @since 18/03/2024
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 public class RequestDTOTest {

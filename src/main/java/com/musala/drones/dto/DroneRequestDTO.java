@@ -1,5 +1,6 @@
 package com.musala.drones.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.musala.drones.util.AppConstants;
 import jakarta.validation.constraints.Max;
@@ -32,11 +33,13 @@ public class DroneRequestDTO implements Serializable {
     @Pattern(regexp = "^(Lightweight|Middleweight|Cruiserweight|Heavyweight)$", message = AppConstants.INVALID_MODEL)
     private String model;
 
+    @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="%,d")
     @JsonProperty("weight")
     @Min(value = 1, message =  AppConstants.DRONE_WEIGHT_LOW)
     @Max(value = 500, message = AppConstants.DRONE_WEIGHT_EXCEEDED)
     private Integer weight;
 
+    @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="%,d")
     @JsonProperty("capacity")
     @Min(value = 1, message = AppConstants.BATTERY_CAPACITY_LOW)
     @Max(value = 100, message = AppConstants.BATTERY_CAPACITY_EXCEEDED)

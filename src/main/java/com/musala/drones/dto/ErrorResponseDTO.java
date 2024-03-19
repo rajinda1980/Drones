@@ -1,7 +1,10 @@
 package com.musala.drones.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -15,6 +18,7 @@ import java.util.List;
  * @since 17/03/2024
  */
 @AllArgsConstructor
+@Getter
 public class ErrorResponseDTO implements Serializable {
 
     @JsonProperty("timestamp")
