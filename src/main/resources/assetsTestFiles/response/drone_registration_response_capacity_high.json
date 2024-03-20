@@ -1,0 +1,12 @@
+{
+  "timestamp": "2024-03-20T02:30:14.226109744",
+  "status": 400,
+  "detail": [
+    {
+      "message": "The battery capacity must be less than or equal to 100",
+      "fieldName": "capacity",
+      "fieldValue": 200
+    }
+  ],
+  "path": "/v1/api/drone/register"
+}

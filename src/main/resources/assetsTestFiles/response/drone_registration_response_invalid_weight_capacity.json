@@ -1,0 +1,27 @@
+{
+  "timestamp": "2024-03-20T04:04:24.591032745",
+  "status": 400,
+  "detail": [
+    {
+      "message": "The serial number is mandatory and must not exceed 100 characters",
+      "fieldName": "serialNumber",
+      "fieldValue": ""
+    },
+    {
+      "message": "The drone weight must be less than or equal to 500 grams",
+      "fieldName": "weight",
+      "fieldValue": 800
+    },
+    {
+      "message": "The battery capacity must be less than or equal to 100",
+      "fieldName": "capacity",
+      "fieldValue": 200
+    },
+    {
+      "message": "The model must be one of the following values: Lightweight, Middleweight, Cruiserweight, or Heavyweight",
+      "fieldName": "model",
+      "fieldValue": "Heavyweightdrone"
+    }
+  ],
+  "path": "/v1/api/drone/register"
+}
