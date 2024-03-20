@@ -1,0 +1,12 @@
+{
+  "timestamp": "2024-03-20T02:27:13.77856467",
+  "status": 400,
+  "detail": [
+    {
+      "message": "The drone weight must be less than or equal to 500 grams",
+      "fieldName": "weight",
+      "fieldValue": 850
+    }
+  ],
+  "path": "/v1/api/drone/register"
+}

@@ -1,0 +1,12 @@
+{
+  "timestamp": "2024-03-20T02:25:01.010351717",
+  "status": 400,
+  "detail": [
+    {
+      "message": "The serial number is mandatory and must not exceed 100 characters",
+      "fieldName": "serialNumber",
+      "fieldValue": ""
+    }
+  ],
+  "path": "/v1/api/drone/register"
+}

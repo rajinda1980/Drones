@@ -1,0 +1,12 @@
+{
+  "createdDate": "2024-03-19T13:17:06.43942264",
+  "statusCode": 200,
+  "statusValue": "OK",
+  "message": "The drone has been registered",
+  "object": {
+    "serialNumber": "1005",
+    "model": "Heavyweight",
+    "weight": "450",
+    "capacity": "100"
+  }
+}

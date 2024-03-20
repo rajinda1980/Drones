@@ -1,0 +1,12 @@
+{
+  "timestamp": "2024-03-20T02:26:29.529791284",
+  "status": 400,
+  "detail": [
+    {
+      "message": "The model must be one of the following values: Lightweight, Middleweight, Cruiserweight, or Heavyweight",
+      "fieldName": "model",
+      "fieldValue": "Heavyweightdroner"
+    }
+  ],
+  "path": "/v1/api/drone/register"
+}

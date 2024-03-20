@@ -1,0 +1,10 @@
+{
+  "timestamp": "2024-03-20T02:24:01.83132699",
+  "status": 400,
+  "detail": [
+    {
+      "message": "Drone is registered with this serial number"
+    }
+  ],
+  "path": "/v1/api/drone/register"
+}

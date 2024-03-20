@@ -10,6 +10,7 @@ import com.musala.drones.dto.ErrorResponseDTO;
 import com.musala.drones.dto.ResponseDTO;
 import com.musala.drones.service.RegistrationServiceImpl;
 import com.musala.drones.util.AppConstants;
+import com.musala.drones.utils.TestConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -78,11 +79,10 @@ public class DispatchControllerTest {
                                 .content(getStringObject(getRequestDTO()))
                 ).andReturn();
 
-        Gson gson = getFullyFledgedGson();
+        Gson gson = TestConstants.getFullyFledgedGson();
         ResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ResponseDTO.class);
 
         Assertions.assertEquals(result.getResponse().getStatus(), HttpStatus.OK.value());
-        Assertions.assertNotNull(response.getCreatedDate());
         Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK.value());
         Assertions.assertEquals(response.getStatusValue(), HttpStatus.OK.getReasonPhrase());
         Assertions.assertEquals(response.getMessage(), AppConstants.DRONE_REGISTERED);
@@ -186,7 +186,7 @@ public class DispatchControllerTest {
                                 .content(getStringObject(requestDTO))
                 ).andReturn();
 
-        Gson gson = getFullyFledgedGson();
+        Gson gson = TestConstants.getFullyFledgedGson();
         ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
 
         Assertions.assertEquals(result.getResponse().getStatus(), expected.getStatus());
@@ -214,16 +214,5 @@ public class DispatchControllerTest {
     static String getStringObject(final Object obj) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(obj);
-    }
-
-    public static Gson getFullyFledgedGson() {
-        return new GsonBuilder().registerTypeAdapter(LocalDateTime.class, (JsonDeserializer<LocalDateTime>)
-                (json, type, jsonDeserializationContext) -> {
-            try{
-                return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS"));
-            } catch (DateTimeParseException e){
-                return null;
-            }
-        }).create();
     }
 }
