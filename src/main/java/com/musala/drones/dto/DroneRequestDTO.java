@@ -30,7 +30,7 @@ public class DroneRequestDTO implements Serializable {
     private String serialNumber;
 
     @JsonProperty("model")
-    @Pattern(regexp = "^(Lightweight|Middleweight|Cruiserweight|Heavyweight)$", message = AppConstants.INVALID_MODEL)
+    @Pattern(regexp = AppConstants.DRONE_MODEL, message = AppConstants.INVALID_MODEL)
     private String model;
 
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="%,d")

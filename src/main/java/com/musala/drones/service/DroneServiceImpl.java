@@ -2,10 +2,12 @@ package com.musala.drones.service;
 
 import com.musala.drones.datamodel.data.Drone;
 import com.musala.drones.datamodel.repository.DroneRepository;
+import com.musala.drones.dto.DroneDTO;
 import com.musala.drones.dto.DroneRequestDTO;
 import com.musala.drones.dto.DroneState;
 import com.musala.drones.dto.ResponseDTO;
 import com.musala.drones.exception.DroneRegistrationException;
+import com.musala.drones.exception.DroneSearchException;
 import com.musala.drones.util.AppConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,12 +25,12 @@ import java.util.Optional;
  */
 @Service
 @Slf4j
-public class RegistrationServiceImpl implements RegistrationService {
+public class DroneServiceImpl implements DroneService {
 
     private CacheService cacheService;
     private DroneRepository droneRepository;
 
-    public RegistrationServiceImpl(CacheService cacheService, DroneRepository droneRepository) {
+    public DroneServiceImpl(CacheService cacheService, DroneRepository droneRepository) {
         this.cacheService = cacheService;
         this.droneRepository = droneRepository;
     }
@@ -63,6 +65,48 @@ public class RegistrationServiceImpl implements RegistrationService {
             log.error("Drone registration cannot be completed. {}", e.getMessage());
             throw new DroneRegistrationException(e.getMessage());
         }
+    }
+
+    /**
+     * Find drone record to given serial number
+     *
+     * @param sn - Serial number
+     * @return droneDTO
+     * @throws DroneSearchException
+     */
+    public DroneDTO getDrone(String sn) throws DroneSearchException {
+        try {
+            Optional<Drone> optDrone = droneRepository.findById(sn);
+            if (!optDrone.isPresent()) {
+                throw new DroneSearchException(AppConstants.DRONE_DOES_NOT_EXIST + sn);
+            }
+
+            Drone drone = optDrone.get();
+            DroneDTO droneDTO = getDroneDTO(drone);
+            return droneDTO;
+
+        } catch (DroneSearchException exception) {
+            log.error("Drone search exception. Drone Serial Number {}. {}", sn, exception.getMessage());
+            throw new DroneRegistrationException(exception.getMessage());
+        }
+    }
+
+    /**
+     * Map Drone to DTO
+     *
+     * @param drone
+     * @return DroneDTO
+     */
+    private DroneDTO getDroneDTO(Drone drone) {
+        DroneDTO droneDTO =
+                new DroneDTO(
+                        drone.getSerialNumber(),
+                        drone.getModel().getCategory(),
+                        drone.getWeight(),
+                        drone.getCapacity(),
+                        drone.getState().getStatus()
+                );
+        return droneDTO;
     }
 
     /**

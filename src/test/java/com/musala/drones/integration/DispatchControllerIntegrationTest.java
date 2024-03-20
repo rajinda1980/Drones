@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.musala.drones.service.RegistrationServiceImpl;
+import com.musala.drones.service.DroneServiceImpl;
 import com.musala.drones.util.AppConstants;
 import com.musala.drones.utils.TestConstants;
 import org.apache.commons.io.IOUtils;
@@ -15,8 +15,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -37,10 +37,10 @@ public class DispatchControllerIntegrationTest {
 
     private static WireMockServer wireMockServer;
     private String restDroneRegistrationUrl, serverDroneRegistrationUrl;
-    private RestTemplate restTemplate;
+    private TestRestTemplate restTemplate;
 
     @MockBean
-    RegistrationServiceImpl registrationService;
+    DroneServiceImpl registrationService;
 
     @BeforeAll
     static void startUp(){
@@ -56,7 +56,7 @@ public class DispatchControllerIntegrationTest {
     @BeforeEach
     void inti() {
         wireMockServer.resetAll();
-        restTemplate = new RestTemplate();
+        restTemplate = new TestRestTemplate();
         serverDroneRegistrationUrl = TestConstants.REGISTER_DRONE_URL;
         restDroneRegistrationUrl = TestConstants.LOCALHOST + wireMockServer.port() + TestConstants.REGISTER_DRONE_URL;
     }
@@ -215,8 +215,8 @@ public class DispatchControllerIntegrationTest {
 
         JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
         Assertions.assertEquals(Integer.parseInt(json.get("statusCode").toString()), HttpStatus.OK.value());
-        Assertions.assertEquals(json.get("statusValue").toString(), '"' + HttpStatus.OK.getReasonPhrase() + '"');
-        Assertions.assertEquals(json.get("message").toString(), '"' + AppConstants.DRONE_REGISTERED + '"');
+        Assertions.assertEquals(json.get("statusValue").toString(), "\"" + HttpStatus.OK.getReasonPhrase() + "\"");
+        Assertions.assertEquals(json.get("message").toString(), "\"" + AppConstants.DRONE_REGISTERED + "\"");
         Assertions.assertEquals(json.get("object").get("serialNumber").toString(), "\"1005\"");
         Assertions.assertEquals(json.get("object").get("model").toString(), "\"Heavyweight\"");
         Assertions.assertEquals(json.get("object").get("weight").toString(), "\"450\"");
@@ -236,8 +236,8 @@ public class DispatchControllerIntegrationTest {
         JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
         Assertions.assertNotNull(json.get("timestamp").toString());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
-        Assertions.assertEquals('"' + TestConstants.REGISTER_DRONE_URL + '"', json.get("path").toString());
-        Assertions.assertEquals('"' + AppConstants.DRONE_REGISTERED_EXCEPTION + '"', json.get("detail").get(0).get("message").toString());
+        Assertions.assertEquals("\"" + TestConstants.REGISTER_DRONE_URL + "\"", json.get("path").toString());
+        Assertions.assertEquals("\"" + AppConstants.DRONE_REGISTERED_EXCEPTION + "\"", json.get("detail").get(0).get("message").toString());
     }
 
     /**
@@ -249,37 +249,37 @@ public class DispatchControllerIntegrationTest {
     static Stream testRegisterDroneInt_exceptions() throws Exception {
         String invalidSN = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_INVALID_SERIALNUMBER, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
         Map<String, String> detailSN = new ConcurrentHashMap<>();
-        detailSN.put("message", '"' + AppConstants.SERIAL_NUMBER_LENGTH_EXCEED + '"');
+        detailSN.put("message", "\"" + AppConstants.SERIAL_NUMBER_LENGTH_EXCEED + "\"");
         detailSN.put("fieldName", "\"serialNumber\"" );
         detailSN.put("fieldValue", "\"\"" );
 
         String invalidModel = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_INVALID_MODEL, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
         Map<String, String> detailModel = new ConcurrentHashMap<>();
-        detailModel.put("message", '"' + AppConstants.INVALID_MODEL + '"');
+        detailModel.put("message", "\"" + AppConstants.INVALID_MODEL + "\"");
         detailModel.put("fieldName", "\"model\"" );
         detailModel.put("fieldValue", "\"Heavyweightdroner\"" );
 
         String weightLow = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_WEIGHT_LOW, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
         Map<String, String> detailWLow = new ConcurrentHashMap<>();
-        detailWLow.put("message", '"' + AppConstants.DRONE_WEIGHT_LOW + '"');
+        detailWLow.put("message", "\"" + AppConstants.DRONE_WEIGHT_LOW + "\"");
         detailWLow.put("fieldName", "\"weight\"" );
         detailWLow.put("fieldValue", "0" );
 
         String weightHigh = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_WEIGHT_HIGH, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
         Map<String, String> detailWHigh = new ConcurrentHashMap<>();
-        detailWHigh.put("message", '"' + AppConstants.DRONE_WEIGHT_EXCEEDED + '"');
+        detailWHigh.put("message", "\"" + AppConstants.DRONE_WEIGHT_EXCEEDED + "\"");
         detailWHigh.put("fieldName", "\"weight\"" );
         detailWHigh.put("fieldValue", "850" );
 
         String capacityLow = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_CAPACITY_LOW, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
         Map<String, String> detailCLow = new ConcurrentHashMap<>();
-        detailCLow.put("message", '"' + AppConstants.BATTERY_CAPACITY_LOW + '"');
+        detailCLow.put("message", "\"" + AppConstants.BATTERY_CAPACITY_LOW + "\"");
         detailCLow.put("fieldName", "\"capacity\"" );
         detailCLow.put("fieldValue", "0" );
 
         String capacityHigh = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_CAPACITY_HIGH, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
         Map<String, String> detailCHigh = new ConcurrentHashMap<>();
-        detailCHigh.put("message", '"' + AppConstants.BATTERY_CAPACITY_EXCEEDED + '"');
+        detailCHigh.put("message", "\"" + AppConstants.BATTERY_CAPACITY_EXCEEDED + "\"");
         detailCHigh.put("fieldName", "\"capacity\"" );
         detailCHigh.put("fieldValue", "200" );
 
@@ -305,7 +305,7 @@ public class DispatchControllerIntegrationTest {
         JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
         Assertions.assertNotNull(json.get("timestamp").toString());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
-        Assertions.assertEquals('"' + TestConstants.REGISTER_DRONE_URL + '"', json.get("path").toString());
+        Assertions.assertEquals("\"" + TestConstants.REGISTER_DRONE_URL + "\"", json.get("path").toString());
         Assertions.assertEquals(detail.get("message"), json.get("detail").get(0).get("message").toString());
         Assertions.assertEquals(detail.get("fieldName"), json.get("detail").get(0).get("fieldName").toString());
         Assertions.assertEquals(detail.get("fieldValue"), json.get("detail").get(0).get("fieldValue").toString());
@@ -324,21 +324,21 @@ public class DispatchControllerIntegrationTest {
         JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
         Assertions.assertNotNull(json.get("timestamp").toString());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
-        Assertions.assertEquals('"' + TestConstants.REGISTER_DRONE_URL + '"', json.get("path").toString());
+        Assertions.assertEquals("\"" + TestConstants.REGISTER_DRONE_URL + "\"", json.get("path").toString());
 
-        Assertions.assertEquals('"' + AppConstants.SERIAL_NUMBER_LENGTH_EXCEED + '"', json.get("detail").get(0).get("message").toString());
+        Assertions.assertEquals("\"" + AppConstants.SERIAL_NUMBER_LENGTH_EXCEED + "\"", json.get("detail").get(0).get("message").toString());
         Assertions.assertEquals("\"serialNumber\"", json.get("detail").get(0).get("fieldName").toString());
         Assertions.assertEquals("\"\"", json.get("detail").get(0).get("fieldValue").toString());
 
-        Assertions.assertEquals('"' + AppConstants.BATTERY_CAPACITY_EXCEEDED + '"', json.get("detail").get(2).get("message").toString());
+        Assertions.assertEquals("\"" + AppConstants.BATTERY_CAPACITY_EXCEEDED + "\"", json.get("detail").get(2).get("message").toString());
         Assertions.assertEquals("\"capacity\"", json.get("detail").get(2).get("fieldName").toString());
         Assertions.assertEquals("200", json.get("detail").get(2).get("fieldValue").toString());
 
-        Assertions.assertEquals('"' + AppConstants.DRONE_WEIGHT_EXCEEDED + '"', json.get("detail").get(1).get("message").toString());
+        Assertions.assertEquals("\"" + AppConstants.DRONE_WEIGHT_EXCEEDED + "\"", json.get("detail").get(1).get("message").toString());
         Assertions.assertEquals("\"weight\"", json.get("detail").get(1).get("fieldName").toString());
         Assertions.assertEquals("800", json.get("detail").get(1).get("fieldValue").toString());
 
-        Assertions.assertEquals('"' + AppConstants.INVALID_MODEL + '"', json.get("detail").get(3).get("message").toString());
+        Assertions.assertEquals("\"" + AppConstants.INVALID_MODEL + "\"", json.get("detail").get(3).get("message").toString());
         Assertions.assertEquals("\"model\"", json.get("detail").get(3).get("fieldName").toString());
         Assertions.assertEquals("\"Heavyweightdrone\"", json.get("detail").get(3).get("fieldValue").toString());
     }

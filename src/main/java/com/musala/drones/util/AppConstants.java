@@ -22,4 +22,8 @@ public final class AppConstants {
 
     public static final String DRONE_REGISTERED = "The drone has been registered";
     public static final String DRONE_REGISTERED_EXCEPTION = "Drone is registered with this serial number";
+    public static final String DRONE_DOES_NOT_EXIST = "The drone does not exist for the given serial number. Serial Number : ";
+
+    // Regular expressions
+    public static final String DRONE_MODEL = "^(Lightweight|Middleweight|Cruiserweight|Heavyweight)$";
 }
