@@ -21,6 +21,7 @@ public final class TestConstants {
 
     public static final String LOCALHOST = "http://localhost:";
     public static final String REGISTER_DRONE_URL = "/v1/api/drone/register";
+    public static final String DRONE_GET_URL = "/v1/api/drone/get/";
     public static final String CHARSET_FOR_FILE_TRANSFORM = "UTF-8";
 
     // Wiremock request json file names

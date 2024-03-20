@@ -30,10 +30,10 @@ import java.util.Optional;
  * @since 18/03/2024
  */
 @ExtendWith(MockitoExtension.class)
-public class RegistrationServiceTest {
+public class DroneServiceTest {
 
     @InjectMocks
-    RegistrationServiceImpl registrationService;
+    DroneServiceImpl droneService;
 
     @Mock
     DroneRepository droneRepository;
@@ -53,7 +53,7 @@ public class RegistrationServiceTest {
         DroneRequestDTO requestDTO = getRequestDTO();
         Mockito.when(droneRepository.findById(requestDTO.getSerialNumber())).thenReturn(Optional.empty());
 
-        ResponseDTO responseDTO = registrationService.registerDrone(requestDTO);
+        ResponseDTO responseDTO = droneService.registerDrone(requestDTO);
         Assertions.assertNotNull(responseDTO.getCreatedDate());
         Assertions.assertEquals(responseDTO.getStatusCode(), HttpStatus.OK.value());
         Assertions.assertEquals(responseDTO.getStatusValue(), HttpStatus.OK.getReasonPhrase());
@@ -76,7 +76,7 @@ public class RegistrationServiceTest {
 
         DroneRegistrationException exception =
                 Assertions.assertThrows(DroneRegistrationException.class,
-                        () -> registrationService.registerDrone(requestDTO));
+                        () -> droneService.registerDrone(requestDTO));
 
         Assertions.assertEquals(exception.getMessage(), AppConstants.DRONE_REGISTERED_EXCEPTION);
     }

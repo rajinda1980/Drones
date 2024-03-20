@@ -2,13 +2,11 @@ package com.musala.drones.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
 import com.musala.drones.dto.DroneRequestDTO;
 import com.musala.drones.dto.ErrorDetailDTO;
 import com.musala.drones.dto.ErrorResponseDTO;
 import com.musala.drones.dto.ResponseDTO;
-import com.musala.drones.service.RegistrationServiceImpl;
+import com.musala.drones.service.DroneServiceImpl;
 import com.musala.drones.util.AppConstants;
 import com.musala.drones.utils.TestConstants;
 import org.junit.jupiter.api.Assertions;
@@ -30,8 +28,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +47,7 @@ import static org.mockito.BDDMockito.*;
 public class DispatchControllerTest {
 
     @MockBean
-    RegistrationServiceImpl registrationService;
+    DroneServiceImpl registrationService;
 
     @Autowired
     MockMvc mockMvc;

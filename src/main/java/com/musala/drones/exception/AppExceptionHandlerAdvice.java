@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -40,6 +39,18 @@ public class AppExceptionHandlerAdvice {
 
     @ExceptionHandler(value = DroneRegistrationException.class)
     public ResponseEntity<ErrorResponseDTO> handleDroneRegistrationException(DroneRegistrationException exception, WebRequest request) {
+        ErrorDetailHeaderDTO headerDTO = new ErrorDetailHeaderDTO();
+        headerDTO.setMessage(exception.getMessage());
+        List<ErrorDetailHeaderDTO> errors = new ArrayList<>();
+        errors.add(headerDTO);
+
+        ErrorResponseDTO responseDTO =
+                constructErrorResponse(errors, HttpStatus.BAD_REQUEST, ((ServletWebRequest) request).getRequest().getServletPath());
+        return new ResponseEntity<>(responseDTO, new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = DroneSearchException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDroneSearchException(DroneRegistrationException exception, WebRequest request) {
         ErrorDetailHeaderDTO headerDTO = new ErrorDetailHeaderDTO();
         headerDTO.setMessage(exception.getMessage());
         List<ErrorDetailHeaderDTO> errors = new ArrayList<>();
