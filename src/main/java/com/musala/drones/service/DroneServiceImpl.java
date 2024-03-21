@@ -72,7 +72,7 @@ public class DroneServiceImpl implements DroneService {
      * @return droneDTO
      * @throws DroneSearchException
      */
-    public DroneDTO getDrone(String sn) throws DroneSearchException {
+    public ResponseDTO getDrone(String sn) throws DroneSearchException {
         try {
             Optional<Drone> optDrone = droneRepository.findById(sn);
             if (!optDrone.isPresent()) {
@@ -81,7 +81,7 @@ public class DroneServiceImpl implements DroneService {
 
             Drone drone = optDrone.get();
             DroneDTO droneDTO = getDroneDTO(drone);
-            return droneDTO;
+            return getResponseDTO(droneDTO);
 
         } catch (DroneSearchException exception) {
             log.error("Drone search exception. Drone Serial Number {}. {}", sn, exception.getMessage());

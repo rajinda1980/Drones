@@ -59,9 +59,9 @@ public class MedicationServiceImpl implements MedicationService {
             } else if (drone.getCapacity() <= 25) {
                 log.error("Unable to load medication onto the drone due to battery capacity. The battery capacity should be " +
                         "greater than or equal to 25. Drone capacity is {}", drone.getCapacity());
-                throw new LoadMedicationException(AppConstants.DRONE_OVERWEIGHT + drone.getWeight() + " grams");
+                throw new LoadMedicationException(AppConstants.LOW_CAPACITY);
 
-            } else if (!drone.getState().getStatus().equals(DroneState.IDLE)) {
+            } else if (!drone.getState().getStatus().equals(DroneState.IDLE.name())) {
                 log.error("Unable to load medication onto the drone since it is not occupied. Please select another Drone." +
                         " Selected Drone Serial Number is {}", medicationRequestDTO.getSerialNumber());
                 throw new LoadMedicationException(AppConstants.DRONE_NOT_OCCUPIED);

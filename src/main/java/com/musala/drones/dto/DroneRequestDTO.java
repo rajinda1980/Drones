@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.musala.drones.util.AppConstants;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,7 +29,6 @@ public class DroneRequestDTO implements Serializable {
     private String serialNumber;
 
     @JsonProperty("model")
-    @Pattern(regexp = AppConstants.REGEXP_DRONE_MODEL, message = AppConstants.INVALID_MODEL)
     private String model;
 
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="%,d")

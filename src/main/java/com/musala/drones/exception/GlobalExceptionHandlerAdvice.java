@@ -41,12 +41,15 @@ public class GlobalExceptionHandlerAdvice {
             detailList.add(errorDetail);
         }
 
+        String path = null != ((ServletWebRequest) request).getRequest().getPathInfo() ?
+                ((ServletWebRequest) request).getRequest().getPathInfo() : ((ServletWebRequest) request).getRequest().getServletPath();
+
         ErrorResponseDTO responseDTO =
                 new ErrorResponseDTO(
                         LocalDateTime.now(),
                         HttpStatus.BAD_REQUEST.value(),
                         detailList,
-                        ((ServletWebRequest) request).getRequest().getServletPath());
+                        path);
         return new ResponseEntity<>(responseDTO, new HttpHeaders(), HttpStatus.BAD_REQUEST);
 
     }

@@ -16,11 +16,6 @@
       "message": "The battery capacity must be less than or equal to 100",
       "fieldName": "capacity",
       "fieldValue": 200
-    },
-    {
-      "message": "The model must be one of the following values: Lightweight, Middleweight, Cruiserweight, or Heavyweight",
-      "fieldName": "model",
-      "fieldValue": "Heavyweightdrone"
     }
   ],
   "path": "/v1/api/drone/register"

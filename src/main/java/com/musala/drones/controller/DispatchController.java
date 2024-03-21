@@ -40,6 +40,7 @@ public class DispatchController {
      */
     @PostMapping("drone/register")
     public ResponseEntity<ResponseDTO> registerDrone(@Validated @RequestBody DroneRequestDTO droneRequest) {
+        appValidator.validateDroneModel(droneRequest.getModel());
         ResponseDTO responseDTO = droneService.registerDrone(droneRequest);
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
@@ -51,9 +52,9 @@ public class DispatchController {
      * @return DroneDTO
      */
     @GetMapping("drone/get/{sn}")
-    public ResponseEntity<DroneDTO> getDrone(@PathVariable String sn) {
-        DroneDTO droneDTO = droneService.getDrone(sn);
-        return new ResponseEntity<>(droneDTO, HttpStatus.OK);
+    public ResponseEntity<ResponseDTO> getDrone(@PathVariable String sn) {
+        ResponseDTO responseDTO = droneService.getDrone(sn);
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
     /**
