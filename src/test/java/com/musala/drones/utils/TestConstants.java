@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,12 +18,14 @@ import java.time.format.DateTimeParseException;
  * @since 19/03/2024
  */
 @NoArgsConstructor
+@Component
 public final class TestConstants {
 
     public static final String LOCALHOST = "http://localhost:";
     public static final String REGISTER_DRONE_URL = "/v1/api/drone/register";
     public static final String DRONE_GET_URL = "/v1/api/drone/get/";
     public static final String CHARSET_FOR_FILE_TRANSFORM = "UTF-8";
+    public static final String INVALID_DRONE_MODEL = "The model must be one of the following values: [Middleweight, Cruiserweight, Lightweight, Heavyweight]";
 
     // Wiremock request json file names
     public static final String DRONE_REGISTRATION_REQUEST_JSON_SUCCESS = "/assetsTestFiles/request/drone_registration_request_success.json";
@@ -62,4 +65,5 @@ public final class TestConstants {
                     }
                 }).create();
     }
+
 }

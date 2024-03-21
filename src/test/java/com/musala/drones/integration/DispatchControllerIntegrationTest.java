@@ -91,7 +91,7 @@ public class DispatchControllerIntegrationTest {
                         .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
                         .willReturn(
                                 aResponse()
-                                        .withStatus(HttpStatus.OK.value())
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
                                         .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
                                         .withBody(droneResponse_registered)
                         )
@@ -106,7 +106,7 @@ public class DispatchControllerIntegrationTest {
                         .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
                         .willReturn(
                                 aResponse()
-                                        .withStatus(HttpStatus.OK.value())
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
                                         .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
                                         .withBody(droneResponse_invalid_serialnumber)
                         )
@@ -121,7 +121,7 @@ public class DispatchControllerIntegrationTest {
                         .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
                         .willReturn(
                                 aResponse()
-                                        .withStatus(HttpStatus.OK.value())
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
                                         .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
                                         .withBody(droneResponse_invalid_model)
                         )
@@ -136,7 +136,7 @@ public class DispatchControllerIntegrationTest {
                         .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
                         .willReturn(
                                 aResponse()
-                                        .withStatus(HttpStatus.OK.value())
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
                                         .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
                                         .withBody(droneResponse_weight_low)
                         )
@@ -151,7 +151,7 @@ public class DispatchControllerIntegrationTest {
                         .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
                         .willReturn(
                                 aResponse()
-                                        .withStatus(HttpStatus.OK.value())
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
                                         .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
                                         .withBody(droneResponse_weight_high)
                         )
@@ -166,7 +166,7 @@ public class DispatchControllerIntegrationTest {
                         .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
                         .willReturn(
                                 aResponse()
-                                        .withStatus(HttpStatus.OK.value())
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
                                         .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
                                         .withBody(droneResponse_capacity_low)
                         )
@@ -181,7 +181,7 @@ public class DispatchControllerIntegrationTest {
                         .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
                         .willReturn(
                                 aResponse()
-                                        .withStatus(HttpStatus.OK.value())
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
                                         .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
                                         .withBody(droneResponse_capacity_high)
                         )
@@ -196,7 +196,7 @@ public class DispatchControllerIntegrationTest {
                         .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
                         .willReturn(
                                 aResponse()
-                                        .withStatus(HttpStatus.OK.value())
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
                                         .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
                                         .withBody(droneResponse_weight_capacity)
                         )
@@ -231,7 +231,7 @@ public class DispatchControllerIntegrationTest {
         String request = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_ALREADY_REGISTERED, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
 
         ResponseEntity response = restTemplate.exchange(restDroneRegistrationUrl, HttpMethod.POST, setHeaders(request), String.class);
-        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
 
         JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
         Assertions.assertNotNull(json.get("timestamp").toString());
@@ -252,12 +252,6 @@ public class DispatchControllerIntegrationTest {
         detailSN.put("message", "\"" + AppConstants.SERIAL_NUMBER_LENGTH_EXCEED + "\"");
         detailSN.put("fieldName", "\"serialNumber\"" );
         detailSN.put("fieldValue", "\"\"" );
-
-        String invalidModel = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_INVALID_MODEL, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
-        Map<String, String> detailModel = new ConcurrentHashMap<>();
-        detailModel.put("message", "\"" + AppConstants.INVALID_MODEL + "\"");
-        detailModel.put("fieldName", "\"model\"" );
-        detailModel.put("fieldValue", "\"Heavyweightdroner\"" );
 
         String weightLow = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_WEIGHT_LOW, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
         Map<String, String> detailWLow = new ConcurrentHashMap<>();
@@ -285,7 +279,6 @@ public class DispatchControllerIntegrationTest {
 
         return Stream.of(
                 Arguments.of(invalidSN, detailSN),
-                Arguments.of(invalidModel, detailModel),
                 Arguments.of(weightLow, detailWLow),
                 Arguments.of(weightHigh, detailWHigh),
                 Arguments.of(capacityLow, detailCLow),
@@ -294,13 +287,13 @@ public class DispatchControllerIntegrationTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Test the integration for exceptions")
+    @DisplayName("Test integration for exceptions")
     @MethodSource
     void testRegisterDroneInt_exceptions(String request, Map<String, String> detail) throws Exception {
         setStub();
 
         ResponseEntity response = restTemplate.exchange(restDroneRegistrationUrl, HttpMethod.POST, setHeaders(request), String.class);
-        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
 
         JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
         Assertions.assertNotNull(json.get("timestamp").toString());
@@ -319,7 +312,7 @@ public class DispatchControllerIntegrationTest {
         String request = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_INVALID_WEIGHT_CAPACITY, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
 
         ResponseEntity response = restTemplate.exchange(restDroneRegistrationUrl, HttpMethod.POST, setHeaders(request), String.class);
-        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
 
         JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
         Assertions.assertNotNull(json.get("timestamp").toString());
@@ -337,10 +330,23 @@ public class DispatchControllerIntegrationTest {
         Assertions.assertEquals("\"" + AppConstants.DRONE_WEIGHT_EXCEEDED + "\"", json.get("detail").get(1).get("message").toString());
         Assertions.assertEquals("\"weight\"", json.get("detail").get(1).get("fieldName").toString());
         Assertions.assertEquals("800", json.get("detail").get(1).get("fieldValue").toString());
+    }
 
-        Assertions.assertEquals("\"" + AppConstants.INVALID_MODEL + "\"", json.get("detail").get(3).get("message").toString());
-        Assertions.assertEquals("\"model\"", json.get("detail").get(3).get("fieldName").toString());
-        Assertions.assertEquals("\"Heavyweightdrone\"", json.get("detail").get(3).get("fieldValue").toString());
+    @Test
+    @DisplayName("Test integration for invaid drone model")
+    void testRegisterDroneInt_InvalidModel() throws Exception {
+        setStub();
+
+        String request = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_INVALID_MODEL, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+
+        ResponseEntity response = restTemplate.exchange(restDroneRegistrationUrl, HttpMethod.POST, setHeaders(request), String.class);
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertNotNull(json.get("timestamp").toString());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
+        Assertions.assertEquals("\"" + TestConstants.REGISTER_DRONE_URL + "\"", json.get("path").toString());
+        Assertions.assertEquals("\"" + TestConstants.INVALID_DRONE_MODEL + "\"", json.get("detail").get(0).get("message").toString());
     }
 
     private HttpEntity setHeaders(String request) {

@@ -1,5 +1,6 @@
 package com.musala.drones.util;
 
+import com.musala.drones.exception.DroneModelException;
 import com.musala.drones.exception.DroneStatusException;
 import com.musala.drones.exception.ImageSignatureException;
 import com.musala.drones.service.CacheService;
@@ -63,6 +64,7 @@ public class AppValidator {
      * Validate given drone status
      *
      * @param status
+     * @return true/false
      * @throws DroneStatusException
      */
     public boolean validateDroneStatus(String status) throws DroneStatusException {
@@ -70,5 +72,19 @@ public class AppValidator {
             return true;
         }
         throw new DroneStatusException(AppConstants.INVALID_DRONE_STATUS + cacheService.getDroneStates().keySet());
+    }
+
+    /**
+     * Validate drone model
+     *
+     * @param model
+     * @return true/false
+     * @throws DroneModelException
+     */
+    public boolean validateDroneModel(String model) throws DroneModelException {
+        if (cacheService.getDroneModels().containsKey(model)) {
+            return true;
+        }
+        throw new DroneModelException(AppConstants.INVALID_MODEL + cacheService.getDroneModels().keySet());
     }
 }

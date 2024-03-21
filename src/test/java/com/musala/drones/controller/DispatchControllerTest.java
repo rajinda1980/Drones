@@ -2,10 +2,8 @@ package com.musala.drones.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.musala.drones.dto.DroneRequestDTO;
-import com.musala.drones.dto.ErrorDetailDTO;
-import com.musala.drones.dto.ErrorResponseDTO;
-import com.musala.drones.dto.ResponseDTO;
+import com.musala.drones.dto.*;
+import com.musala.drones.service.CacheService;
 import com.musala.drones.service.DroneServiceImpl;
 import com.musala.drones.util.AppConstants;
 import com.musala.drones.utils.TestConstants;
@@ -51,6 +49,9 @@ public class DispatchControllerTest {
 
     @Autowired
     MockMvc mockMvc;
+
+    @Autowired
+    CacheService cacheService;
 
     private String droneRegistrationURL;
 
@@ -114,15 +115,6 @@ public class DispatchControllerTest {
         detailsMax.add(errorDetailMax);
         ErrorResponseDTO responseDTO_SNMax = new ErrorResponseDTO(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), detailsMax, "/v1/api/drone/register");
 
-        DroneRequestDTO requestDTO_mode = new DroneRequestDTO("D102030", "Mediumweight", 250, 50);
-        List detailsMode = new ArrayList();
-        ErrorDetailDTO errorDetailMode = new ErrorDetailDTO();
-        errorDetailMode.setFieldName("model");
-        errorDetailMode.setFieldValue("Mediumweight");
-        errorDetailMode.setMessage(AppConstants.INVALID_MODEL);
-        detailsMode.add(errorDetailMode);
-        ErrorResponseDTO responseDTO_SNMode = new ErrorResponseDTO(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), detailsMode, "/v1/api/drone/register");
-
         DroneRequestDTO requestDTO_weight_low = new DroneRequestDTO("D102030", "Middleweight", 0, 100);
         List detailsWeightLow = new ArrayList();
         ErrorDetailDTO errorDetailWeightLow = new ErrorDetailDTO();
@@ -162,7 +154,6 @@ public class DispatchControllerTest {
         return Stream.of(
                 Arguments.of(requestDTO_SNMin, responseDTO_SNMin),
                 Arguments.of(requestDTO_SNMax, responseDTO_SNMax),
-                Arguments.of(requestDTO_mode, responseDTO_SNMode),
                 Arguments.of(requestDTO_weight_low, responseDTO_weight_low),
                 Arguments.of(requestDTO_weight_high, responseDTO_weight_high),
                 Arguments.of(requestDTO_capacity_low, responseDTO_capacity_low),
@@ -172,7 +163,7 @@ public class DispatchControllerTest {
 
     @ParameterizedTest
     @DisplayName("Test the functionality for registering a drone - Exception scenario")
-    @MethodSource
+    @MethodSource()
     void testRegisterDrone_Exception(DroneRequestDTO requestDTO, ErrorResponseDTO expected) throws Exception {
         MvcResult result =
                 mockMvc.perform(
@@ -188,12 +179,43 @@ public class DispatchControllerTest {
         Assertions.assertEquals(result.getResponse().getStatus(), expected.getStatus());
         Assertions.assertEquals(response.getStatus(), expected.getStatus());
         Assertions.assertTrue(response.getDetail().size() > 0);
+        Assertions.assertEquals(response.getPath().toString(), TestConstants.REGISTER_DRONE_URL);
 
         Map fromResponse = (Map) response.getDetail().get(0);
         ErrorDetailDTO expectedErrorDetail = (ErrorDetailDTO)  expected.getDetail().get(0);
         Assertions.assertEquals(fromResponse.get("message"), expectedErrorDetail.getMessage());
         Assertions.assertEquals(fromResponse.get("fieldName"), expectedErrorDetail.getFieldName());
         Assertions.assertEquals(fromResponse.get("fieldValue").toString(), expectedErrorDetail.getFieldValue());
+    }
+
+    @Test
+    @DisplayName("Test functionality for invalid drone model")
+    void testRegisterDrone_InvalidModel() throws Exception {
+        DroneRequestDTO requestDTO_mode = new DroneRequestDTO("D102030", "Mediumweight", 250, 50);
+        List detailsMode = new ArrayList();
+        ErrorDetailHeaderDTO errorDetailMode = new ErrorDetailHeaderDTO();
+        errorDetailMode.setMessage(AppConstants.INVALID_MODEL + cacheService.getDroneModels().keySet().toString());
+        detailsMode.add(errorDetailMode);
+        ErrorResponseDTO expected = new ErrorResponseDTO(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), detailsMode, "/v1/api/drone/register");
+
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .post(droneRegistrationURL)
+                                .contentType(AppConstants.CONTENT_TYPE)
+                                .content(getStringObject(requestDTO_mode))
+                ).andReturn();
+
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
+
+        Assertions.assertEquals(result.getResponse().getStatus(), expected.getStatus());
+        Assertions.assertEquals(response.getStatus(), expected.getStatus());
+        Assertions.assertTrue(response.getDetail().size() > 0);
+
+        Assertions.assertEquals(response.getPath().toString(), TestConstants.REGISTER_DRONE_URL);
+        Map fromResponse = (Map) response.getDetail().get(0);
+        Assertions.assertEquals(fromResponse.get("message").toString(), errorDetailMode.getMessage());
     }
 
     private DroneRequestDTO getRequestDTO() {

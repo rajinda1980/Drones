@@ -81,11 +81,11 @@ public class DispatchControllerE2ETest {
         Assertions.assertEquals(HttpStatus.OK, created.getStatusCode());
         Assertions.assertEquals(HttpStatus.OK, search.getStatusCode());
 
-        Assertions.assertEquals("\"" + requestDTO.getSerialNumber() + "\"", jsonGet.get("serialNumber").toString());
-        Assertions.assertEquals("\"" + requestDTO.getModel() + "\"", jsonGet.get("model").toString());
-        Assertions.assertEquals(requestDTO.getWeight().toString(), jsonGet.get("weight").toString());
-        Assertions.assertEquals(requestDTO.getCapacity().toString(), jsonGet.get("capacity").toString());
-        Assertions.assertEquals("\"IDLE\"", jsonGet.get("status").toString());
+        Assertions.assertEquals("\"" + requestDTO.getSerialNumber() + "\"", jsonGet.get("object").get("serialNumber").toString());
+        Assertions.assertEquals("\"" + requestDTO.getModel() + "\"", jsonGet.get("object").get("model").toString());
+        Assertions.assertEquals(requestDTO.getWeight().toString(), jsonGet.get("object").get("weight").toString());
+        Assertions.assertEquals(requestDTO.getCapacity().toString(), jsonGet.get("object").get("capacity").toString());
+        Assertions.assertEquals("\"IDLE\"", jsonGet.get("object").get("status").toString());
 
         Assertions.assertEquals("\"" + requestDTO.getSerialNumber() + "\"", jsonCreated.get("object").get("serialNumber").toString());
         Assertions.assertEquals("\"" + requestDTO.getModel() + "\"", jsonCreated.get("object").get("model").toString());

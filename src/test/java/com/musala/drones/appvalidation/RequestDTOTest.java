@@ -46,9 +46,6 @@ public class RequestDTOTest {
                 "Middleweight", 250, 75);
         String requestDTO_SNMax_response = AppConstants.SERIAL_NUMBER_LENGTH_EXCEED;
 
-        DroneRequestDTO requestDTO_mode = new DroneRequestDTO("D102030", "Mediumweight", 250, 50);
-        String requestDTO_mode_response = AppConstants.INVALID_MODEL;
-
         DroneRequestDTO requestDTO_weight_low = new DroneRequestDTO("D102030", "Middleweight", 0, 100);
         String requestDTO_weight_low_response = AppConstants.DRONE_WEIGHT_LOW;
 
@@ -64,7 +61,6 @@ public class RequestDTOTest {
         return Stream.of(
                 Arguments.of(requestDTO_SNMin, requestDTO_SNMin_response),
                 Arguments.of(requestDTO_SNMax, requestDTO_SNMax_response),
-                Arguments.of(requestDTO_mode, requestDTO_mode_response),
                 Arguments.of(requestDTO_weight_low, requestDTO_weight_low_response),
                 Arguments.of(requestDTO_weight_high, requestDTO_weight_high_response),
                 Arguments.of(requestDTO_capacity_low, requestDTO_capacity_low_response),

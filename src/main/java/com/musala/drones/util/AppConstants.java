@@ -14,7 +14,7 @@ public final class AppConstants {
 
     public static final String CONTENT_TYPE = "application/json";
     public static final String SERIAL_NUMBER_LENGTH_EXCEED = "The serial number is mandatory and must not exceed 100 characters";
-    public static final String INVALID_MODEL = "The model must be one of the following values: Lightweight, Middleweight, Cruiserweight, or Heavyweight";
+    public static final String INVALID_MODEL = "The model must be one of the following values: ";
     public static final String DRONE_WEIGHT_LOW = "The drone weight must be greater than or equal to 1 gram";
     public static final String DRONE_WEIGHT_EXCEEDED = "The drone weight must be less than or equal to 500 grams";
     public static final String BATTERY_CAPACITY_LOW = "The battery capacity must be greater than or equal to 1";
@@ -34,6 +34,7 @@ public final class AppConstants {
     public static final String UNKNOWN_IMAGE_TYPE = "Unknown image type. Supported types are PNG, JPG, or JPEG";
 
     public static final String DRONE_OVERWEIGHT = "Unable to load medication onto the drone due to overweight. The item weight should be less than or equal to ";
+    public static final String LOW_CAPACITY = "Unable to load medication onto the drone due to low capacity. The drone capacity should be greater than 25";
     public static final String DRONE_NOT_OCCUPIED = "Unable to load medication onto the drone as it is not occupied. Please select another drone";
     public static final String DRONE_STATUS_MANDATORY = "The drone status is mandatory";
     public static final String INVALID_DRONE_STATUS = "Invalid drone status. Valid statuses are : ";

@@ -31,7 +31,7 @@ public class ContentTypeFilterTest {
     @Test
     @DisplayName("Test Content-Type filter - happy path")
     public void testContentTypeFileter_success() throws Exception {
-        DroneRequestDTO requestDTO = new DroneRequestDTO("S1000001", "UNKNOWN", 500, 100);
+        DroneRequestDTO requestDTO = new DroneRequestDTO("S1000001", "Middleweight", 5000, 100);
 
         mockMvc.perform(
                 MockMvcRequestBuilders
@@ -39,13 +39,13 @@ public class ContentTypeFilterTest {
                         .content(getStringObject(requestDTO))
                         .contentType(AppConstants.CONTENT_TYPE))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.detail[0].message").value(AppConstants.INVALID_MODEL));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.detail[0].message").value(AppConstants.DRONE_WEIGHT_EXCEEDED));
     }
 
     @Test
     @DisplayName("Test Content-Type filter - Fail path")
     public void testContentTypeFilter_fail() throws Exception {
-        DroneRequestDTO requestDTO = new DroneRequestDTO("S1000001", "UNKNOWN", 500, 100);
+        DroneRequestDTO requestDTO = new DroneRequestDTO("S1000001", "Middleweight", 500, 100);
 
         mockMvc.perform(
                         MockMvcRequestBuilders

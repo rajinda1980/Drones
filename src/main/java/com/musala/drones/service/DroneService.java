@@ -1,6 +1,5 @@
 package com.musala.drones.service;
 
-import com.musala.drones.dto.DroneDTO;
 import com.musala.drones.dto.DroneRequestDTO;
 import com.musala.drones.dto.DroneStatusChangeRequestDTO;
 import com.musala.drones.dto.ResponseDTO;
@@ -18,6 +17,6 @@ import com.musala.drones.exception.DroneStatusException;
 public interface DroneService {
 
     ResponseDTO registerDrone(DroneRequestDTO requestDTO) throws DroneRegistrationException;
-    DroneDTO getDrone(String sn) throws DroneSearchException;
+    ResponseDTO getDrone(String sn) throws DroneSearchException;
     ResponseDTO changeStatus(DroneStatusChangeRequestDTO droneStatusChangeRequestDTO) throws DroneStatusException;
 }
