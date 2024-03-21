@@ -28,37 +28,48 @@ public class AppExceptionHandlerAdvice {
 
     @ExceptionHandler(value = CacheException.class)
     public ResponseEntity<ErrorResponseDTO> handleCacheException(CacheException exception) {
-        ErrorDetailHeaderDTO headerDTO = new ErrorDetailHeaderDTO();
-        headerDTO.setMessage(exception.getMessage());
-        List<ErrorDetailHeaderDTO> errors = new ArrayList<>();
-        errors.add(headerDTO);
-
-        ErrorResponseDTO responseDTO = constructErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR, "Caching");
+        ErrorResponseDTO responseDTO = getErrorResponseDTO(exception, "Caching");
         return new ResponseEntity<>(responseDTO, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(value = DroneRegistrationException.class)
     public ResponseEntity<ErrorResponseDTO> handleDroneRegistrationException(DroneRegistrationException exception, WebRequest request) {
-        ErrorDetailHeaderDTO headerDTO = new ErrorDetailHeaderDTO();
-        headerDTO.setMessage(exception.getMessage());
-        List<ErrorDetailHeaderDTO> errors = new ArrayList<>();
-        errors.add(headerDTO);
-
-        ErrorResponseDTO responseDTO =
-                constructErrorResponse(errors, HttpStatus.BAD_REQUEST, ((ServletWebRequest) request).getRequest().getServletPath());
+        ErrorResponseDTO responseDTO = getErrorResponseDTO(exception, ((ServletWebRequest) request).getRequest().getServletPath());
         return new ResponseEntity<>(responseDTO, new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(value = DroneSearchException.class)
     public ResponseEntity<ErrorResponseDTO> handleDroneSearchException(DroneRegistrationException exception, WebRequest request) {
+        ErrorResponseDTO responseDTO = getErrorResponseDTO(exception, ((ServletWebRequest) request).getRequest().getServletPath());
+        return new ResponseEntity<>(responseDTO, new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = ImageSignatureException.class)
+    public ResponseEntity<ErrorResponseDTO> handleImageSignatureException(ImageSignatureException exception, WebRequest request) {
+        ErrorResponseDTO responseDTO = getErrorResponseDTO(exception, ((ServletWebRequest) request).getRequest().getServletPath());
+        return new ResponseEntity<>(responseDTO, new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = LoadMedicationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleLoadMedicationException(LoadMedicationException exception, WebRequest request) {
+        ErrorResponseDTO responseDTO = getErrorResponseDTO(exception, ((ServletWebRequest) request).getRequest().getServletPath());
+        return new ResponseEntity<>(responseDTO, new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = DroneStatusException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDroneStatusException(DroneStatusException exception, WebRequest request) {
+        ErrorResponseDTO responseDTO = getErrorResponseDTO(exception, ((ServletWebRequest) request).getRequest().getServletPath());
+        return new ResponseEntity<>(responseDTO, new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    private ErrorResponseDTO getErrorResponseDTO(RuntimeException exception, String path) {
         ErrorDetailHeaderDTO headerDTO = new ErrorDetailHeaderDTO();
         headerDTO.setMessage(exception.getMessage());
         List<ErrorDetailHeaderDTO> errors = new ArrayList<>();
         errors.add(headerDTO);
 
-        ErrorResponseDTO responseDTO =
-                constructErrorResponse(errors, HttpStatus.BAD_REQUEST, ((ServletWebRequest) request).getRequest().getServletPath());
-        return new ResponseEntity<>(responseDTO, new HttpHeaders(), HttpStatus.BAD_REQUEST);
+        ErrorResponseDTO responseDTO = constructErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR, path);
+        return responseDTO;
     }
 
     private ErrorResponseDTO constructErrorResponse(List<? extends Object> messages, HttpStatus status, String path) {

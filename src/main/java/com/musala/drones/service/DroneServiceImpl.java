@@ -2,12 +2,10 @@ package com.musala.drones.service;
 
 import com.musala.drones.datamodel.data.Drone;
 import com.musala.drones.datamodel.repository.DroneRepository;
-import com.musala.drones.dto.DroneDTO;
-import com.musala.drones.dto.DroneRequestDTO;
-import com.musala.drones.dto.DroneState;
-import com.musala.drones.dto.ResponseDTO;
+import com.musala.drones.dto.*;
 import com.musala.drones.exception.DroneRegistrationException;
 import com.musala.drones.exception.DroneSearchException;
+import com.musala.drones.exception.DroneStatusException;
 import com.musala.drones.util.AppConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -110,12 +108,33 @@ public class DroneServiceImpl implements DroneService {
     }
 
     /**
+     * Change drone status
+     *
+     * @param droneStatusChangeRequestDTO
+     * @return response DTO
+     * @throws DroneStatusException
+     */
+    public ResponseDTO changeStatus(DroneStatusChangeRequestDTO droneStatusChangeRequestDTO) throws DroneStatusException {
+        Optional<Drone> optDrone = droneRepository.findById(droneStatusChangeRequestDTO.getSerialNumber());
+        if (!optDrone.isPresent()) {
+            throw new DroneStatusException(AppConstants.DRONE_DOES_NOT_EXIST + droneStatusChangeRequestDTO.getSerialNumber());
+        }
+
+        Drone drone = optDrone.get();
+        drone.setState(cacheService.getDroneStates().get(droneStatusChangeRequestDTO.getStatus()));
+        droneRepository.saveAndFlush(drone);
+
+        ResponseDTO responseDTO = getResponseDTO(droneStatusChangeRequestDTO);
+        return responseDTO;
+    }
+
+    /**
      * Map responseDTO
      *
      * @param requestDTO
      * @return response DTO
      */
-    private ResponseDTO getResponseDTO(DroneRequestDTO requestDTO) {
+    private ResponseDTO getResponseDTO(Object requestDTO) {
         ResponseDTO responseDTO =
                 new ResponseDTO(
                         LocalDateTime.now(),
