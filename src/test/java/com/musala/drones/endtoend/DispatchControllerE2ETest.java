@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.musala.drones.controller.DispatchController;
 import com.musala.drones.datamodel.repository.DroneRepository;
+import com.musala.drones.datamodel.repository.MedicationRepository;
 import com.musala.drones.dto.DroneRequestDTO;
 import com.musala.drones.util.AppConstants;
 import com.musala.drones.utils.TestConstants;
@@ -40,6 +41,9 @@ public class DispatchControllerE2ETest {
     @Autowired
     DroneRepository droneRepository;
 
+    @Autowired
+    MedicationRepository medicationRepository;
+
     @LocalServerPort
     int port;
 
@@ -59,6 +63,7 @@ public class DispatchControllerE2ETest {
      * Clear database table
      */
     private void cleanup() {
+        medicationRepository.deleteAll();
         droneRepository.deleteAll();
     }
 

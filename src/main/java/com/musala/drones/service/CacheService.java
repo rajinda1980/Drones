@@ -15,6 +15,6 @@ import java.util.Map;
  */
 public interface CacheService {
 
-    public Map<String, Model> getDroneModels() throws CacheException;
-    public Map<String, State> getDroneStates() throws CacheException;
+    Map<String, Model> getDroneModels() throws CacheException;
+    Map<String, State> getDroneStates() throws CacheException;
 }
