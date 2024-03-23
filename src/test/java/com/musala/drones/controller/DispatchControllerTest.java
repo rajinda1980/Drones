@@ -3,8 +3,13 @@ package com.musala.drones.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.musala.drones.dto.*;
+import com.musala.drones.exception.DroneRegistrationException;
+import com.musala.drones.exception.DroneSearchException;
+import com.musala.drones.exception.DroneStatusException;
+import com.musala.drones.exception.LoadMedicationException;
 import com.musala.drones.service.CacheService;
-import com.musala.drones.service.DroneServiceImpl;
+import com.musala.drones.service.DroneService;
+import com.musala.drones.service.MedicationService;
 import com.musala.drones.util.AppConstants;
 import com.musala.drones.utils.TestConstants;
 import org.junit.jupiter.api.Assertions;
@@ -45,7 +50,10 @@ import static org.mockito.BDDMockito.*;
 public class DispatchControllerTest {
 
     @MockBean
-    DroneServiceImpl registrationService;
+    DroneService droneService;
+
+    @MockBean
+    MedicationService medicationService;
 
     @Autowired
     MockMvc mockMvc;
@@ -54,26 +62,32 @@ public class DispatchControllerTest {
     CacheService cacheService;
 
     private String droneRegistrationURL;
+    private String droneGetURL;
+    private String loadMedication;
+    private String droneStatusChange;
 
     @BeforeEach
     void init() {
         MockitoAnnotations.openMocks(this);
-        droneRegistrationURL = "/v1/api/drone/register";
+        droneRegistrationURL = TestConstants.REGISTER_DRONE_URL;
+        droneGetURL = TestConstants.DRONE_GET_URL;
+        loadMedication = TestConstants.LOAD_MEDICATION_URL;
+        droneStatusChange = TestConstants.DRONE_STATUS_CHANGE_URL;
     }
 
     @Test
     @DisplayName("Test the functionality for registering a drone - Happy path")
     void testRegisterDrone_success() throws Exception {
-        DroneRequestDTO requestDTO = getRequestDTO();
-        ResponseDTO responseDTO = getResponseDTO_success(requestDTO);
+        ResponseDTO responseDTO = getDroneResponseDTO_success();
+        DroneRequestDTO requestDTO = getDroneRequestDTO();
 
-        Mockito.when(registrationService.registerDrone(isA(DroneRequestDTO.class))).thenReturn(responseDTO);
+        Mockito.when(droneService.registerDrone(isA(DroneRequestDTO.class))).thenReturn(responseDTO);
         MvcResult result =
                 mockMvc.perform(
                         MockMvcRequestBuilders
                                 .post(droneRegistrationURL)
                                 .contentType(AppConstants.CONTENT_TYPE)
-                                .content(getStringObject(getRequestDTO()))
+                                .content(getStringObject(requestDTO))
                 ).andReturn();
 
         Gson gson = TestConstants.getFullyFledgedGson();
@@ -162,7 +176,7 @@ public class DispatchControllerTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Test the functionality for registering a drone - Exception scenario")
+    @DisplayName("Test the functionality for registering a drone - Exception scenario of DTO level validation")
     @MethodSource()
     void testRegisterDrone_Exception(DroneRequestDTO requestDTO, ErrorResponseDTO expected) throws Exception {
         MvcResult result =
@@ -218,15 +232,247 @@ public class DispatchControllerTest {
         Assertions.assertEquals(fromResponse.get("message").toString(), errorDetailMode.getMessage());
     }
 
-    private DroneRequestDTO getRequestDTO() {
-        DroneRequestDTO requestDTO = new DroneRequestDTO("D001", "Middleweight", 150, 100);
-        return requestDTO;
+    @Test
+    @DisplayName("Test get drone details functionality - Success path")
+    void testGetDrone_success() throws Exception {
+        ResponseDTO responseDTO = getDroneSearchResponseDTO_success("S0001");
+        Mockito.when(droneService.getDrone(isA(String.class))).thenReturn(responseDTO);
+
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(TestConstants.DRONE_GET_URL + "S0001")
+                                .contentType(AppConstants.CONTENT_TYPE)
+                ).andReturn();
+
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ResponseDTO.class);
+
+        Assertions.assertEquals(result.getResponse().getStatus(), HttpStatus.OK.value());
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK.value());
+        Assertions.assertEquals(response.getStatusValue(), HttpStatus.OK.getReasonPhrase());
+        Assertions.assertEquals(response.getMessage(), AppConstants.DRONE_INFO);
+
+        Map fromResponse = (Map) response.getObject();
+        Assertions.assertEquals(fromResponse.get("serialNumber"), "S0001");
+        Assertions.assertEquals(fromResponse.get("model"), ((DroneDTO) responseDTO.getObject()).getModel());
+        Assertions.assertEquals(fromResponse.get("weight").toString(), ((DroneDTO) responseDTO.getObject()).getWeight().toString());
+        Assertions.assertEquals(fromResponse.get("capacity").toString(), ((DroneDTO) responseDTO.getObject()).getCapacity().toString());
+        Assertions.assertEquals(fromResponse.get("status").toString(), ((DroneDTO) responseDTO.getObject()).getStatus());
     }
 
-    private ResponseDTO getResponseDTO_success(DroneRequestDTO requestDTO) {
+    @Test
+    @DisplayName("Test get drone details functionality - Exception when drone does not exist")
+    void testGetDrone_exception() throws Exception {
+        Mockito.doThrow(new DroneSearchException(AppConstants.DRONE_DOES_NOT_EXIST + "S0001"))
+                        .when(droneService).getDrone(isA(String.class));
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(TestConstants.DRONE_GET_URL + "S0001")
+                                .contentType(AppConstants.CONTENT_TYPE)
+                ).andReturn();
+
+        Assertions.assertEquals(result.getResponse().getStatus(), HttpStatus.BAD_REQUEST.value());
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
+        Assertions.assertEquals(AppConstants.DRONE_DOES_NOT_EXIST + "S0001", ((Map) response.getDetail().get(0)).get("message"));
+    }
+
+    @Test
+    @DisplayName("Test register drone functionality - Exception when drone is already exist")
+    void testRegisterDrone_exception() throws Exception {
+        Mockito.doThrow(new DroneRegistrationException(AppConstants.DRONE_REGISTERED_EXCEPTION))
+                .when(droneService).registerDrone(isA(DroneRequestDTO.class));
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .post(droneRegistrationURL)
+                                .contentType(AppConstants.CONTENT_TYPE)
+                                .content(getStringObject(getDroneRequestDTO()))
+                ).andReturn();
+
+        Assertions.assertEquals(result.getResponse().getStatus(), HttpStatus.BAD_REQUEST.value());
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
+        Assertions.assertEquals(AppConstants.DRONE_REGISTERED_EXCEPTION, ((Map) response.getDetail().get(0)).get("message"));
+    }
+
+    @Test
+    @DisplayName("Test the functionality for load medication - Happy path")
+    void testLoadMedication() throws Exception {
+        ResponseDTO responseDTO = getMedicationResponseDTO_success();
+        MedicationRequestDTO requestDTO = getMedicationRequestDTO();
+        when(medicationService.loadMedication(isA(MedicationRequestDTO.class))).thenReturn(responseDTO);
+
+        MvcResult result =  mockMvc.perform(
+                                MockMvcRequestBuilders
+                                        .post(TestConstants.LOAD_MEDICATION_URL)
+                                        .content(getStringObject((MedicationRequestDTO) responseDTO.getObject()))
+                                        .contentType(AppConstants.CONTENT_TYPE))
+                                .andReturn();
+
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ResponseDTO.class);
+
+        Assertions.assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        Assertions.assertEquals(result.getResponse().getStatus(), HttpStatus.OK.value());
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK.value());
+        Assertions.assertEquals(response.getStatusValue(), HttpStatus.OK.getReasonPhrase());
+        Assertions.assertEquals(response.getMessage(), AppConstants.LOAD_MEDICATION_SUCCESS);
+
+        Map fromResponse = (Map) response.getObject();
+        Assertions.assertEquals("S0001", fromResponse.get("serialNumber"));
+        Assertions.assertEquals(requestDTO.getName(), fromResponse.get("name"));
+        Assertions.assertEquals(requestDTO.getWeight().toString(), fromResponse.get("weight").toString());
+        Assertions.assertEquals(requestDTO.getCode(), fromResponse.get("code").toString());
+        Assertions.assertEquals(requestDTO.getSerialNumber(), fromResponse.get("serialNumber").toString());
+    }
+
+    /**
+     * Value map for loading medication
+     *
+     * @return Argument list
+     * @throws Exception
+     */
+    static Stream<Arguments> testLoadMedication_Exceptions() throws Exception{
+        String msg_weight = AppConstants.DRONE_OVERWEIGHT + " 400 grams";
+        String msg_cap = AppConstants.LOW_CAPACITY;
+        String msg_occ = AppConstants.DRONE_NOT_OCCUPIED;
+
+        return Stream.of(
+                Arguments.of(msg_weight),
+                Arguments.of(msg_cap),
+                Arguments.of(msg_occ)
+        );
+    }
+
+    @ParameterizedTest
+    @DisplayName("Test the functionality for load medication - An exception is thrown when the weight of the medication exceeds the weight capacity of the drone")
+    @MethodSource
+    void testLoadMedication_Exceptions(String msg) throws Exception {
+        MedicationRequestDTO requestDTO = getMedicationRequestDTO();
+        String errMessage = msg;
+        Mockito.doThrow(new LoadMedicationException(errMessage)).when(medicationService).loadMedication(isA(MedicationRequestDTO.class));
+
+        MvcResult result =  mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .post(TestConstants.LOAD_MEDICATION_URL)
+                                .content(getStringObject(requestDTO))
+                                .contentType(AppConstants.CONTENT_TYPE))
+                        .andReturn();
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
+        Assertions.assertEquals(errMessage, ((Map) response.getDetail().get(0)).get("message"));
+    }
+
+    @Test
+    @DisplayName("Drone status change - happy path")
+    void testChangeStatus_success() throws Exception {
+        DroneStatusChangeRequestDTO requestDTO = getDroneStatusChangeRequestDTO();
+        ResponseDTO responseDTO = getDroneStatusChangeResponseDTO_success();
+        when(droneService.changeStatus(isA(DroneStatusChangeRequestDTO.class))).thenReturn(responseDTO);
+
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .put(TestConstants.DRONE_STATUS_CHANGE_URL)
+                                .content(getStringObject(requestDTO))
+                                .contentType(AppConstants.CONTENT_TYPE)
+                        ).andReturn();
+
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ResponseDTO.class);
+        Assertions.assertEquals(HttpStatus.OK.value(), response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK.getReasonPhrase(), response.getStatusValue());
+        Assertions.assertEquals(AppConstants.DRONE_STATUS_CHANGE_SUCCESS + requestDTO.getSerialNumber(), response.getMessage());
+
+        Map fromResponse = (Map) response.getObject();
+        Assertions.assertEquals(requestDTO.getSerialNumber(), fromResponse.get("serialNumber"));
+        Assertions.assertEquals(requestDTO.getStatus(), fromResponse.get("status"));
+    }
+
+    /**
+     * Value map
+     *
+     * @return value map
+     * @throws Exception
+     */
+    static Stream<Arguments> testChangeStatus_invalidStatus() throws Exception {
+        String msg_is = AppConstants.INVALID_MODEL + "[IDLE, LOADING, LOADED, DELIVERING, DELIVERED, RETURNING]";
+        String msg_sn = AppConstants.DRONE_DOES_NOT_EXIST + "S0001";
+
+        return Stream.of(
+                Arguments.of(msg_is),
+                Arguments.of(msg_sn)
+        );
+    }
+
+    @ParameterizedTest
+    @DisplayName("Drone status change - Exception scenarios")
+    @MethodSource
+    void testChangeStatus_invalidStatus(String msg) throws Exception {
+        DroneStatusChangeRequestDTO requestDTO = getDroneStatusChangeRequestDTO();
+        String errMessage = msg;
+        Mockito.doThrow(new DroneStatusException(errMessage)).when(droneService).changeStatus(isA(DroneStatusChangeRequestDTO.class));
+
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .put(TestConstants.DRONE_STATUS_CHANGE_URL)
+                                .content(getStringObject(requestDTO))
+                                .contentType(AppConstants.CONTENT_TYPE)
+                ).andReturn();
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
+        Assertions.assertEquals(errMessage, ((Map) response.getDetail().get(0)).get("message"));
+    }
+
+    private ResponseDTO getDroneResponseDTO_success() throws Exception{
         ResponseDTO responseDTO =
-                new ResponseDTO(LocalDateTime.now(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), AppConstants.DRONE_REGISTERED, requestDTO);
+                new ResponseDTO(LocalDateTime.now(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), AppConstants.DRONE_REGISTERED, getDroneRequestDTO());
         return responseDTO;
+    }
+
+    private DroneRequestDTO getDroneRequestDTO() throws Exception {
+        return new DroneRequestDTO("D001", "Middleweight", 150, 100);
+    }
+
+    private ResponseDTO getDroneSearchResponseDTO_success(String serialNumber) throws Exception{
+        ResponseDTO responseDTO =
+                new ResponseDTO(LocalDateTime.now(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),  AppConstants.DRONE_INFO, getDroneDTO(serialNumber));
+        return responseDTO;
+    }
+
+    private DroneDTO getDroneDTO(String serialNumber) throws Exception {
+        return new DroneDTO(serialNumber, "Heavyweight", 400, 100, DroneState.LOADING.name());
+    }
+
+    private ResponseDTO getMedicationResponseDTO_success() throws Exception {
+        ResponseDTO responseDTO =
+                new ResponseDTO(LocalDateTime.now(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
+                        AppConstants.LOAD_MEDICATION_SUCCESS, getMedicationRequestDTO());
+        return responseDTO;
+    }
+
+    private MedicationRequestDTO getMedicationRequestDTO() throws Exception {
+        return new MedicationRequestDTO("MED-0001", 350, "CD_45445", TestConstants.getImage("PNG"), "S0001");
+    }
+
+    private ResponseDTO getDroneStatusChangeResponseDTO_success() throws Exception {
+        DroneStatusChangeRequestDTO requestDTO = getDroneStatusChangeRequestDTO();
+        ResponseDTO responseDTO =
+                new ResponseDTO(LocalDateTime.now(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
+                        AppConstants.DRONE_STATUS_CHANGE_SUCCESS + requestDTO.getSerialNumber(), requestDTO);
+        return responseDTO;
+    }
+
+    private DroneStatusChangeRequestDTO getDroneStatusChangeRequestDTO() throws Exception {
+        return new DroneStatusChangeRequestDTO("S0001", "DELIVERING");
     }
 
     static String getStringObject(final Object obj) throws Exception {

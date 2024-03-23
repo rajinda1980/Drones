@@ -83,8 +83,8 @@ public class DispatchControllerE2ETest {
 
         Assertions.assertEquals("\"" + requestDTO.getSerialNumber() + "\"", jsonGet.get("object").get("serialNumber").toString());
         Assertions.assertEquals("\"" + requestDTO.getModel() + "\"", jsonGet.get("object").get("model").toString());
-        Assertions.assertEquals(requestDTO.getWeight().toString(), jsonGet.get("object").get("weight").toString());
-        Assertions.assertEquals(requestDTO.getCapacity().toString(), jsonGet.get("object").get("capacity").toString());
+        Assertions.assertEquals("\"" + requestDTO.getWeight().toString() + "\"", jsonGet.get("object").get("weight").toString());
+        Assertions.assertEquals("\"" + requestDTO.getCapacity().toString() + "\"", jsonGet.get("object").get("capacity").toString());
         Assertions.assertEquals("\"IDLE\"", jsonGet.get("object").get("status").toString());
 
         Assertions.assertEquals("\"" + requestDTO.getSerialNumber() + "\"", jsonCreated.get("object").get("serialNumber").toString());
