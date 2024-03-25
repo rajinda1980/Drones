@@ -42,6 +42,9 @@ public final class AppConstants {
     public static final String INVALID_DRONE_STATUS = "Invalid drone status. Valid statuses are : ";
     public static final String LOAD_MEDICATION_SUCCESS ="The loading of medication onto the drone was successful";
 
+    public static final String NO_MEDICATION_ITEMS_FOUND = "No medication items were found for the given serial number. Drone serial number : ";
+    public static final String NO_AVAILABLE_DRONE_FOUND = "Drones are not available. Please try again later";
+
     // Regular expressions
     public static final String REGEXP_DRONE_MODEL = "^(Lightweight|Middleweight|Cruiserweight|Heavyweight)$";
     public static final String REGEXP_MEDICATION_NAME = "[a-zA-Z0-9-_]*";

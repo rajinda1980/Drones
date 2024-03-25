@@ -12,7 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * A service class implementation
@@ -133,6 +135,63 @@ public class DroneServiceImpl implements DroneService {
             log.error("Drone status change exception. Serial number : {}, Exception : {}",
                     droneStatusChangeRequestDTO.getSerialNumber(), exception.getMessage());
             throw new DroneStatusException(exception.getMessage());
+        }
+    }
+
+    /**
+     * Search drones in idle status
+     *
+     * @return available drone list
+     * @throws DroneSearchException
+     */
+    public List<AvailableDroneDTO> findIdleDrones() throws DroneSearchException {
+        try {
+            Optional<List<Drone>> optDrones = droneRepository.findAllByState("IDLE");
+            if (optDrones.isPresent()) {
+                List<Drone> drones = optDrones.get();
+                List<AvailableDroneDTO> availableDroneDTOS =
+                        drones.stream()
+                                .map(
+                                        d -> {
+                                            AvailableDroneDTO dto =
+                                                    new AvailableDroneDTO(d.getSerialNumber(), d.getModel().getCategory(), d.getWeight(), d.getCapacity());
+                                            return dto;
+                                        }
+                                ).collect(Collectors.toList());
+                return availableDroneDTOS;
+
+            } else {
+                log.info("No available drones found");
+                throw new DroneSearchException(AppConstants.NO_AVAILABLE_DRONE_FOUND);
+            }
+
+        } catch (Exception exception) {
+            log.error("Exception when searching drones in IDLE status. {}", exception.getMessage());
+            throw new DroneSearchException(exception.getMessage());
+        }
+    }
+
+    /**
+     * Find drone battery level
+     *
+     * @param serialNumber
+     * @return drone battery level
+     * @throws DroneSearchException
+     */
+    public Integer getDroneBatteryLevel(String serialNumber) throws DroneSearchException {
+        try {
+            Optional<Drone> optDrone = droneRepository.findById(serialNumber);
+            if (optDrone.isPresent()) {
+                return optDrone.get().getCapacity();
+            } else {
+                log.info("Drone does not exist to given serial number. Drone Serial Number : {}", serialNumber);
+                throw new DroneSearchException(AppConstants.DRONE_DOES_NOT_EXIST + serialNumber);
+            }
+
+        } catch (Exception exception) {
+            log.error("Exception when searching drones battery level. Drone serial number : {}, Exception : {}",
+                    serialNumber, exception.getMessage());
+            throw new DroneSearchException(exception.getMessage());
         }
     }
 
