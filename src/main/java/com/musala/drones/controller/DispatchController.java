@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * Dispatch class
  *
@@ -77,10 +79,44 @@ public class DispatchController {
      * @return success message
      */
     @PutMapping("drone/status")
-    public ResponseEntity<?> changeStatus(@Validated @RequestBody DroneStatusChangeRequestDTO droneStatusChangeRequestDTO) {
+    public ResponseEntity<ResponseDTO> changeStatus(@Validated @RequestBody DroneStatusChangeRequestDTO droneStatusChangeRequestDTO) {
         appValidator.validateDroneStatus(droneStatusChangeRequestDTO.getStatus());
         ResponseDTO responseDTO = droneService.changeStatus(droneStatusChangeRequestDTO);
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
+    /**
+     * Find loaded medication items
+     *
+     * @param sn - drone serial number
+     * @return loaded medication item list
+     */
+    @GetMapping("medication/find/{sn}")
+    public ResponseEntity<List<LoadedMedicationItemDTO>> findLoadedMedicationItems(@PathVariable String sn) {
+        List<LoadedMedicationItemDTO> list = medicationService.findLoadedMedicationItems(sn);
+        return new ResponseEntity<>(list, HttpStatus.OK);
+    }
+
+    /**
+     * Find drones in idle status
+     *
+     * @return available drone list
+     */
+    @GetMapping("drone/find/idle")
+    public ResponseEntity<List<AvailableDroneDTO>> findAvailableDrones() {
+        List<AvailableDroneDTO> drones = droneService.findIdleDrones();
+        return new ResponseEntity<>(drones, HttpStatus.OK);
+    }
+
+    /**
+     * Get drone battery level
+     *
+     * @param sn - Drone serial number
+     * @return drone battery level
+     */
+    @GetMapping("drone/battery-level/{sn}")
+    public ResponseEntity<Integer> getDroneBatteryLevel(@PathVariable String sn) {
+        Integer level = droneService.getDroneBatteryLevel(sn);
+        return new ResponseEntity<>(level, HttpStatus.OK);
+    }
 }
