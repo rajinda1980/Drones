@@ -1,0 +1,10 @@
+{
+  "timestamp": "2024-03-24T03:12:47.934853267",
+  "status": 400,
+  "detail": [
+    {
+      "message": "Unable to load medication onto the drone due to low capacity. The drone capacity should be greater than 25"
+    }
+  ],
+  "path": "/v1/api/medication/load"
+}

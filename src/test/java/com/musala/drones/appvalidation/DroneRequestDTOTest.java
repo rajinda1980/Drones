@@ -3,6 +3,7 @@ package com.musala.drones.appvalidation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.musala.drones.dto.DroneRequestDTO;
 import com.musala.drones.util.AppConstants;
+import com.musala.drones.utils.TestConstants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,7 +20,7 @@ import java.util.stream.Stream;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Junit test class to test DTO
+ * Junit test class to test DroneRequestDTOTest
  *
  * @author Rajinda
  * @version 1.0
@@ -27,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-public class RequestDTOTest {
+public class DroneRequestDTOTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -69,12 +70,12 @@ public class RequestDTOTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Unit test for DroneRequestDTO class")
+    @DisplayName("Unit test for Drone Request validations")
     @MethodSource
     void testDroneRequestDTO_Exceptions(DroneRequestDTO requestDTO, String expect) throws Exception {
         mockMvc.perform(
                         MockMvcRequestBuilders
-                                .post("/v1/api/drone/register")
+                                .post(TestConstants.REGISTER_DRONE_URL)
                                 .content(getStringObject(requestDTO))
                                 .contentType(AppConstants.CONTENT_TYPE))
                 .andExpect(status().isBadRequest())

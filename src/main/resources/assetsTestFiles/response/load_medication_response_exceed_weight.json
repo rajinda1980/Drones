@@ -1,0 +1,10 @@
+{
+  "timestamp": "2024-03-24T03:10:07.982521368",
+  "status": 400,
+  "detail": [
+    {
+      "message": "Unable to load medication onto the drone due to overweight. The item weight should be less than or equal to 450 grams"
+    }
+  ],
+  "path": "/v1/api/medication/load"
+}

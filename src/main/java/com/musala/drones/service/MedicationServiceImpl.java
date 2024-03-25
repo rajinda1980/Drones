@@ -5,6 +5,7 @@ import com.musala.drones.datamodel.data.Medication;
 import com.musala.drones.datamodel.repository.DroneRepository;
 import com.musala.drones.datamodel.repository.MedicationRepository;
 import com.musala.drones.dto.DroneState;
+import com.musala.drones.dto.MRequestWithoutImageDTO;
 import com.musala.drones.dto.MedicationRequestDTO;
 import com.musala.drones.dto.ResponseDTO;
 import com.musala.drones.exception.LoadMedicationException;
@@ -79,7 +80,15 @@ public class MedicationServiceImpl implements MedicationService {
             medicationRepository.saveAndFlush(medication);
             droneRepository.saveAndFlush(drone);
 
-            ResponseDTO responseDTO = getResponseDTO(medicationRequestDTO);
+
+            ResponseDTO responseDTO =
+                    getResponseDTO(
+                            new MRequestWithoutImageDTO(
+                                    medicationRequestDTO.getName(),
+                                    medicationRequestDTO.getWeight(),
+                                    medicationRequestDTO.getCode(),
+                                    medicationRequestDTO.getSerialNumber()),
+                            AppConstants.LOAD_MEDICATION_SUCCESS);
             return responseDTO;
 
         } else {
@@ -93,15 +102,16 @@ public class MedicationServiceImpl implements MedicationService {
      * Map responseDTO
      *
      * @param requestDTO
+     * @param message to user
      * @return response DTO
      */
-    private ResponseDTO getResponseDTO(MedicationRequestDTO requestDTO) {
+    private ResponseDTO getResponseDTO(MRequestWithoutImageDTO requestDTO, String message) {
         ResponseDTO responseDTO =
                 new ResponseDTO(
                         LocalDateTime.now(),
                         HttpStatus.OK.value(),
                         HttpStatus.OK.getReasonPhrase(),
-                        AppConstants.DRONE_REGISTERED,
+                        message,
                         (Object) requestDTO
                 );
         return responseDTO;

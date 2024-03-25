@@ -57,7 +57,7 @@ public class DroneServiceImpl implements DroneService {
                     );
             droneRepository.saveAndFlush(drone);
             log.info("Drone registration is completed. Serial number : {}", requestDTO.getSerialNumber());
-            return getResponseDTO(requestDTO);
+            return getResponseDTO(requestDTO, AppConstants.DRONE_REGISTERED);
 
         } catch (Exception e) {
             log.error("Drone registration cannot be completed. {}", e.getMessage());
@@ -81,11 +81,11 @@ public class DroneServiceImpl implements DroneService {
 
             Drone drone = optDrone.get();
             DroneDTO droneDTO = getDroneDTO(drone);
-            return getResponseDTO(droneDTO);
+            return getResponseDTO(droneDTO, AppConstants.DRONE_INFO);
 
-        } catch (DroneSearchException exception) {
+        } catch (Exception exception) {
             log.error("Drone search exception. Drone Serial Number {}. {}", sn, exception.getMessage());
-            throw new DroneRegistrationException(exception.getMessage());
+            throw new DroneSearchException(exception.getMessage());
         }
     }
 
@@ -115,17 +115,25 @@ public class DroneServiceImpl implements DroneService {
      * @throws DroneStatusException
      */
     public ResponseDTO changeStatus(DroneStatusChangeRequestDTO droneStatusChangeRequestDTO) throws DroneStatusException {
-        Optional<Drone> optDrone = droneRepository.findById(droneStatusChangeRequestDTO.getSerialNumber());
-        if (!optDrone.isPresent()) {
-            throw new DroneStatusException(AppConstants.DRONE_DOES_NOT_EXIST + droneStatusChangeRequestDTO.getSerialNumber());
+        try {
+            Optional<Drone> optDrone = droneRepository.findById(droneStatusChangeRequestDTO.getSerialNumber());
+            if (!optDrone.isPresent()) {
+                throw new DroneStatusException(AppConstants.DRONE_DOES_NOT_EXIST + droneStatusChangeRequestDTO.getSerialNumber());
+            }
+
+            Drone drone = optDrone.get();
+            drone.setState(cacheService.getDroneStates().get(droneStatusChangeRequestDTO.getStatus()));
+            droneRepository.saveAndFlush(drone);
+
+            ResponseDTO responseDTO = getResponseDTO(droneStatusChangeRequestDTO,
+                    AppConstants.DRONE_STATUS_CHANGE_SUCCESS + droneStatusChangeRequestDTO.getSerialNumber());
+            return responseDTO;
+
+        } catch (Exception exception) {
+            log.error("Drone status change exception. Serial number : {}, Exception : {}",
+                    droneStatusChangeRequestDTO.getSerialNumber(), exception.getMessage());
+            throw new DroneStatusException(exception.getMessage());
         }
-
-        Drone drone = optDrone.get();
-        drone.setState(cacheService.getDroneStates().get(droneStatusChangeRequestDTO.getStatus()));
-        droneRepository.saveAndFlush(drone);
-
-        ResponseDTO responseDTO = getResponseDTO(droneStatusChangeRequestDTO);
-        return responseDTO;
     }
 
     /**
@@ -134,13 +142,13 @@ public class DroneServiceImpl implements DroneService {
      * @param requestDTO
      * @return response DTO
      */
-    private ResponseDTO getResponseDTO(Object requestDTO) {
+    private ResponseDTO getResponseDTO(Object requestDTO, String message) {
         ResponseDTO responseDTO =
                 new ResponseDTO(
                         LocalDateTime.now(),
                         HttpStatus.OK.value(),
                         HttpStatus.OK.getReasonPhrase(),
-                        AppConstants.DRONE_REGISTERED,
+                        message,
                         (Object) requestDTO
                 );
         return responseDTO;

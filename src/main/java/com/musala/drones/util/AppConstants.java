@@ -23,11 +23,13 @@ public final class AppConstants {
     public static final String DRONE_REGISTERED = "The drone has been registered";
     public static final String DRONE_REGISTERED_EXCEPTION = "Drone is registered with this serial number";
     public static final String DRONE_DOES_NOT_EXIST = "The drone does not exist for the given serial number. Serial Number : ";
+    public static final String DRONE_INFO = "Details for the drone have been found and are provided";
+    public static final String DRONE_STATUS_CHANGE_SUCCESS = "The drone status has been changed. The serial number of the drone is: ";
 
     public static final String INVALID_MEDICATION_NAME = "Invalid medication name. Only letters, numbers, hyphens, and underscores are allowed in the name";
     public static final String MEDICATION_NAME_LENGTH_EXCEEDED = "The medication name is mandatory and must not exceed 250 characters";
-    public static final String INVALID_MEDICATION_CODE = "Invalid medication code. Only upper case letters, underscore and numbers are allowed in the code";
-    public static final String EMPTY_MEDICATION_CODE = "The medication code is mandatory and must not exceed 100 characters";
+    public static final String INVALID_MEDICATION_CODE_TEXT = "Invalid medication code. Only upper case letters, underscore and numbers are allowed in the code";
+    public static final String INVALID_MEDICATION_CODE_LENGTH = "The medication code is mandatory and must not exceed 100 characters";
     public static final String EMPTY_MEDICATION_WEIGHT = "The weight is mandatory";
     public static final String EMPTY_IMAGE = "The image name is mandatory";
     public static final String INVALID_IMAGE_TYPE = "Invalid image type. Supported types are PNG, JPG, or JPEG";
@@ -38,6 +40,7 @@ public final class AppConstants {
     public static final String DRONE_NOT_OCCUPIED = "Unable to load medication onto the drone as it is not occupied. Please select another drone";
     public static final String DRONE_STATUS_MANDATORY = "The drone status is mandatory";
     public static final String INVALID_DRONE_STATUS = "Invalid drone status. Valid statuses are : ";
+    public static final String LOAD_MEDICATION_SUCCESS ="The loading of medication onto the drone was successful";
 
     // Regular expressions
     public static final String REGEXP_DRONE_MODEL = "^(Lightweight|Middleweight|Cruiserweight|Heavyweight)$";

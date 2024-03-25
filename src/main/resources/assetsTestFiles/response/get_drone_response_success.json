@@ -1,0 +1,13 @@
+{
+  "createdDate": "2024-03-24T01:01:53.78239211",
+  "statusCode": 200,
+  "statusValue": "OK",
+  "message": "Details for the drone have been found and are provided",
+  "object": {
+    "serialNumber": "1001",
+    "model": "Heavyweight",
+    "weight": "500",
+    "capacity": "90",
+    "status": "IDLE"
+  }
+}

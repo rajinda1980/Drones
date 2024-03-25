@@ -1,0 +1,10 @@
+{
+  "createdDate": "2024-03-25T09:49:56.690966619",
+  "statusCode": 200,
+  "statusValue": "OK",
+  "message": "The drone status has been changed. The serial number of the drone is: 1003",
+  "object": {
+    "serialNumber": "1003",
+    "status": "LOADED"
+  }
+}

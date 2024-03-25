@@ -1,0 +1,10 @@
+{
+  "timestamp": "2024-03-24T03:14:06.323425809",
+  "status": 400,
+  "detail": [
+    {
+      "message": "Unable to load medication onto the drone as it is not occupied. Please select another drone"
+    }
+  ],
+  "path": "/v1/api/medication/load"
+}

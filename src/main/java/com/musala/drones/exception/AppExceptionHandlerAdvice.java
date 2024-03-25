@@ -39,7 +39,7 @@ public class AppExceptionHandlerAdvice {
     }
 
     @ExceptionHandler(value = DroneSearchException.class)
-    public ResponseEntity<ErrorResponseDTO> handleDroneSearchException(DroneRegistrationException exception, WebRequest request) {
+    public ResponseEntity<ErrorResponseDTO> handleDroneSearchException(DroneSearchException exception, WebRequest request) {
         ErrorResponseDTO responseDTO = getErrorResponseDTO(exception, request, HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(responseDTO, new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
