@@ -2,6 +2,7 @@ package com.musala.drones.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 import com.musala.drones.dto.*;
 import com.musala.drones.exception.DroneRegistrationException;
 import com.musala.drones.exception.DroneSearchException;
@@ -32,6 +33,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -76,7 +78,7 @@ public class DispatchControllerTest {
     }
 
     @Test
-    @DisplayName("Test the functionality for registering a drone - Happy path")
+    @DisplayName("Unit Test => Test the functionality for registering a drone - Happy path")
     void testRegisterDrone_success() throws Exception {
         ResponseDTO responseDTO = getDroneResponseDTO_success();
         DroneRequestDTO requestDTO = getDroneRequestDTO();
@@ -176,7 +178,7 @@ public class DispatchControllerTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Test the functionality for registering a drone - Exception scenario of DTO level validation")
+    @DisplayName("Unit Test => Test the functionality for registering a drone - Exception scenario of DTO level validation")
     @MethodSource()
     void testRegisterDrone_Exception(DroneRequestDTO requestDTO, ErrorResponseDTO expected) throws Exception {
         MvcResult result =
@@ -203,7 +205,7 @@ public class DispatchControllerTest {
     }
 
     @Test
-    @DisplayName("Test functionality for invalid drone model")
+    @DisplayName("Unit Test => Test functionality for invalid drone model")
     void testRegisterDrone_InvalidModel() throws Exception {
         DroneRequestDTO requestDTO_mode = new DroneRequestDTO("D102030", "Mediumweight", 250, 50);
         List detailsMode = new ArrayList();
@@ -233,7 +235,7 @@ public class DispatchControllerTest {
     }
 
     @Test
-    @DisplayName("Test get drone details functionality - Success path")
+    @DisplayName("Unit Test => Test get drone details functionality - Success path")
     void testGetDrone_success() throws Exception {
         ResponseDTO responseDTO = getDroneSearchResponseDTO_success("S0001");
         Mockito.when(droneService.getDrone(isA(String.class))).thenReturn(responseDTO);
@@ -262,7 +264,7 @@ public class DispatchControllerTest {
     }
 
     @Test
-    @DisplayName("Test get drone details functionality - Exception when drone does not exist")
+    @DisplayName("Unit Test => Test get drone details functionality - Exception when drone does not exist")
     void testGetDrone_exception() throws Exception {
         Mockito.doThrow(new DroneSearchException(AppConstants.DRONE_DOES_NOT_EXIST + "S0001"))
                         .when(droneService).getDrone(isA(String.class));
@@ -280,7 +282,7 @@ public class DispatchControllerTest {
     }
 
     @Test
-    @DisplayName("Test register drone functionality - Exception when drone is already exist")
+    @DisplayName("Unit Test => Test register drone functionality - Exception when drone is already exist")
     void testRegisterDrone_exception() throws Exception {
         Mockito.doThrow(new DroneRegistrationException(AppConstants.DRONE_REGISTERED_EXCEPTION))
                 .when(droneService).registerDrone(isA(DroneRequestDTO.class));
@@ -299,7 +301,7 @@ public class DispatchControllerTest {
     }
 
     @Test
-    @DisplayName("Test the functionality for load medication - Happy path")
+    @DisplayName("Unit Test => Test the functionality for load medication - Happy path")
     void testLoadMedication() throws Exception {
         ResponseDTO responseDTO = getMedicationResponseDTO_success();
         MedicationRequestDTO requestDTO = getMedicationRequestDTO();
@@ -348,7 +350,7 @@ public class DispatchControllerTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Test the functionality for load medication - An exception is thrown when the weight of the medication exceeds the weight capacity of the drone")
+    @DisplayName("Unit Test => Test the functionality for load medication - An exception is thrown when the weight of the medication exceeds the weight capacity of the drone")
     @MethodSource
     void testLoadMedication_Exceptions(String msg) throws Exception {
         MedicationRequestDTO requestDTO = getMedicationRequestDTO();
@@ -369,7 +371,7 @@ public class DispatchControllerTest {
     }
 
     @Test
-    @DisplayName("Drone status change - happy path")
+    @DisplayName("Unit Test => Drone status change - happy path")
     void testChangeStatus_success() throws Exception {
         DroneStatusChangeRequestDTO requestDTO = getDroneStatusChangeRequestDTO();
         ResponseDTO responseDTO = getDroneStatusChangeResponseDTO_success();
@@ -411,7 +413,7 @@ public class DispatchControllerTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Drone status change - Exception scenarios")
+    @DisplayName("Unit Test => Drone status change - Exception scenarios")
     @MethodSource
     void testChangeStatus_invalidStatus(String msg) throws Exception {
         DroneStatusChangeRequestDTO requestDTO = getDroneStatusChangeRequestDTO();
@@ -423,6 +425,59 @@ public class DispatchControllerTest {
                         MockMvcRequestBuilders
                                 .put(TestConstants.DRONE_STATUS_CHANGE_URL)
                                 .content(getStringObject(requestDTO))
+                                .contentType(AppConstants.CONTENT_TYPE)
+                ).andReturn();
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
+        Assertions.assertEquals(errMessage, ((Map) response.getDetail().get(0)).get("message"));
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test case for verifying loaded medication items controller method - Happy path")
+    void testFindLoadedMedicationItems_success() throws Exception {
+        Mockito.when(medicationService.findLoadedMedicationItems(isA(String.class))).thenReturn(getLoadedMedicationItems());
+
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(TestConstants.LOADED_MEDICATION_ITEM_URL + "2001")
+                                .contentType(AppConstants.CONTENT_TYPE)
+                ).andReturn();
+
+        Gson gson = TestConstants.getFullyFledgedGson();
+        List response = gson.fromJson(result.getResponse().getContentAsString(), List.class);
+        Assertions.assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        Assertions.assertEquals(5, response.size());
+
+        String base64String = Base64.getEncoder().encodeToString(TestConstants.getImage("PNG"));
+        String imageJson = gson.toJson(base64String);
+        // Remove first and last double quotes added by gson
+        String imageOutput =  imageJson.substring(1, imageJson.length() - 1);
+
+        for (int i = 0; i < 5; i++) {
+            LinkedTreeMap mapItem = (LinkedTreeMap) response.get(i);
+            Assertions.assertTrue(mapItem.get("serialNumber").toString().matches("2001"));
+            Assertions.assertTrue(mapItem.get("name").toString().matches("^(UT5510-1420|UT5510-1421|UT5510-1422|UT5510-1423|UT5510-1424)$"));
+            Assertions.assertTrue(mapItem.get("code").toString().matches("^(BT-4850|BT-4851|BT-4852|BT-4853|BT-4854)$"));
+            Assertions.assertTrue(mapItem.get("weight").toString().matches("^(150|200|250|300|350)$"));
+            Assertions.assertEquals(imageOutput, mapItem.get("image").toString());
+        }
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test case for verifying loaded medication items controller method - exceptions")
+    void testFindLoadedMedicationItems_exception() throws Exception {
+        String errMessage = AppConstants.NO_MEDICATION_ITEMS_FOUND + "2001";
+
+        Mockito.doThrow(new LoadMedicationException(AppConstants.NO_MEDICATION_ITEMS_FOUND + "2001"))
+                .when(medicationService).findLoadedMedicationItems(isA(String.class));
+
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(TestConstants.LOADED_MEDICATION_ITEM_URL + "2001")
                                 .contentType(AppConstants.CONTENT_TYPE)
                 ).andReturn();
 
@@ -473,6 +528,16 @@ public class DispatchControllerTest {
 
     private DroneStatusChangeRequestDTO getDroneStatusChangeRequestDTO() throws Exception {
         return new DroneStatusChangeRequestDTO("S0001", "DELIVERING");
+    }
+
+    private List<LoadedMedicationItemDTO> getLoadedMedicationItems() throws Exception {
+        return List.of(
+                new LoadedMedicationItemDTO("2001", "UT5510-1420", "BT-4850", 350, TestConstants.getImage("PNG")),
+                new LoadedMedicationItemDTO("2001", "UT5510-1421", "BT-4851", 250, TestConstants.getImage("PNG")),
+                new LoadedMedicationItemDTO("2001", "UT5510-1422", "BT-4852", 150, TestConstants.getImage("PNG")),
+                new LoadedMedicationItemDTO("2001", "UT5510-1423", "BT-4853", 200, TestConstants.getImage("PNG")),
+                new LoadedMedicationItemDTO("2001", "UT5510-1424", "BT-4854", 300, TestConstants.getImage("PNG"))
+        );
     }
 
     static String getStringObject(final Object obj) throws Exception {

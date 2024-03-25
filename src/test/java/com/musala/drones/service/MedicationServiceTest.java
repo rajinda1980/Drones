@@ -1,10 +1,12 @@
 package com.musala.drones.service;
 
 import com.musala.drones.datamodel.data.Drone;
+import com.musala.drones.datamodel.data.Medication;
 import com.musala.drones.datamodel.data.Model;
 import com.musala.drones.datamodel.data.State;
 import com.musala.drones.datamodel.repository.DroneRepository;
 import com.musala.drones.datamodel.repository.MedicationRepository;
+import com.musala.drones.dto.LoadedMedicationItemDTO;
 import com.musala.drones.dto.MRequestWithoutImageDTO;
 import com.musala.drones.dto.MedicationRequestDTO;
 import com.musala.drones.dto.ResponseDTO;
@@ -26,6 +28,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -57,7 +60,7 @@ public class MedicationServiceTest {
     }
 
     @Test
-    @DisplayName("Test load medications - happy path")
+    @DisplayName("Unit Test => Test case for verifying load medications - happy path")
     void loadMedication_success() throws Exception {
         Mockito.when(cacheService.getDroneModels()).thenReturn(TestConstants.loadModels());
         Mockito.when(cacheService.getDroneStates()).thenReturn(TestConstants.loadStatus());
@@ -115,7 +118,7 @@ public class MedicationServiceTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Test load medications - Exceptions")
+    @DisplayName("Unit Test => Test case for verifying load medications - Exceptions")
     @MethodSource
     void loadMedication_exceptions(MedicationRequestDTO requestDTO, Drone drone, String expected) throws Exception {
         Mockito.when(droneRepository.findById("SU1002")).thenReturn(Optional.of(drone));
@@ -126,4 +129,50 @@ public class MedicationServiceTest {
         Assertions.assertEquals(expected, exception.getMessage());
     }
 
+    @Test
+    @DisplayName("Unit Test => Test case for verifying loaded medication items - Happy path")
+    void testFindLoadedMedicationItems_success() throws Exception {
+        Mockito.when(cacheService.getDroneModels()).thenReturn(TestConstants.loadModels());
+        Mockito.when(cacheService.getDroneStates()).thenReturn(TestConstants.loadStatus());
+
+        Drone drone = new Drone("1001", cacheService.getDroneModels().get("Heavyweight"), 500,
+                100, cacheService.getDroneStates().get("IDLE"));
+        Mockito.when(medicationRepository.findAllByDrone(drone.getSerialNumber())).thenReturn(Optional.of(getMedicationItemList(drone)));
+
+        List<LoadedMedicationItemDTO> itemList = medicationService.findLoadedMedicationItems(drone.getSerialNumber());
+        Assertions.assertNotNull(itemList);
+        Assertions.assertEquals(5, itemList.size());
+
+        itemList.forEach(
+                item -> {
+                    Assertions.assertAll(
+                            "Assert single items",
+                            () -> Assertions.assertTrue(item.getName().matches("^(UT5510-1420|UT5510-1430|UT5510-1432|UT5510-1442|UT5510-1460)$")),
+                            () -> Assertions.assertTrue(item.getCode().matches("^(BT-7845|BT-2241|BT-2256|BT-6678|BT-6021)$"))
+                    );
+                }
+        );
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test case for verifying loaded medication items - exception when medication items are not available")
+    void testFindLoadedMedicationItems_exception() throws Exception {
+        Mockito.when(medicationRepository.findAllByDrone("10002")).thenReturn(Optional.empty());
+        LoadMedicationException exception =
+                Assertions.assertThrows(
+                        LoadMedicationException.class,
+                        () -> medicationService.findLoadedMedicationItems("10002")
+                );
+        Assertions.assertEquals(AppConstants.NO_MEDICATION_ITEMS_FOUND + "10002", exception.getMessage());
+    }
+
+    private List<Medication> getMedicationItemList(Drone drone) throws Exception {
+        return List.of(
+                new Medication(10L, "UT5510-1420", 250, "BT-7845", TestConstants.getImage("PNG"), drone),
+                new Medication(12L, "UT5510-1430", 150, "BT-2241", TestConstants.getImage("JPG"), drone),
+                new Medication(13L, "UT5510-1432", 300, "BT-2256", TestConstants.getImage("PNG"), drone),
+                new Medication(16L, "UT5510-1442", 450, "BT-6678", TestConstants.getImage("JPEG"), drone),
+                new Medication(18L, "UT5510-1460", 200, "BT-6021", TestConstants.getImage("JPG"), drone)
+        );
+    }
 }
