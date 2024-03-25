@@ -3,6 +3,8 @@ package com.musala.drones.utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
+import com.musala.drones.datamodel.data.Model;
+import com.musala.drones.datamodel.data.State;
 import lombok.NoArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -13,6 +15,8 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Store and manage test related constant values
@@ -43,6 +47,18 @@ public final class TestConstants {
     public static final String DRONE_REGISTRATION_REQUEST_JSON_CAPACITY_LOW = "/assetsTestFiles/request/drone_registration_request_capacity_low.json";
     public static final String DRONE_REGISTRATION_REQUEST_JSON_CAPACITY_HIGH = "/assetsTestFiles/request/drone_registration_request_capacity_high.json";
     public static final String DRONE_REGISTRATION_REQUEST_JSON_INVALID_WEIGHT_CAPACITY = "/assetsTestFiles/request/drone_registration_request_invalid_weight_capacity.json";
+    public static final String LOAD_MEDICATION_REQUEST_JSON_SUCCESS = "/assetsTestFiles/request/load_medication_request_success.json";
+    public static final String LOAD_MEDICATION_REQUEST_JSON_CODE_MANDATORY = "/assetsTestFiles/request/load_medication_request_code_mandatory.json";
+    public static final String LOAD_MEDICATION_REQUEST_JSON_DRONE_NOT_OCCUPIED = "/assetsTestFiles/request/load_medication_request_drone_not_occupied.json";
+    public static final String LOAD_MEDICATION_REQUEST_JSON_EXCEED_WEIGHT = "/assetsTestFiles/request/load_medication_request_exceed_weight.json";
+    public static final String LOAD_MEDICATION_REQUEST_JSON_INVALID_CODE = "/assetsTestFiles/request/load_medication_request_invalid_code.json";
+    public static final String LOAD_MEDICATION_REQUEST_JSON_INVALID_NAME = "/assetsTestFiles/request/load_medication_request_invalid_name.json";
+    public static final String LOAD_MEDICATION_REQUEST_JSON_INVALID_SERIALNUMBER = "/assetsTestFiles/request/load_medication_request_invalid_serialnumber.json";
+    public static final String LOAD_MEDICATION_REQUEST_JSON_LOW_CAPACITY = "/assetsTestFiles/request/load_medication_request_low_capacity.json";
+    public static final String LOAD_MEDICATION_REQUEST_JSON_WEIGHT_MANDATORY = "/assetsTestFiles/request/load_medication_request_weight_mandatory.json";
+    public static final String LOAD_MEDICATION_REQUEST_JSON_WITHOUT_NAME = "/assetsTestFiles/request/load_medication_request_without_name.json";
+    public static final String DRONE_STATUS_CHANGE_REQUEST_JSON_SUCCESS = "/assetsTestFiles/request/drone_status_change_request_success.json";
+    public static final String DRONE_STATUS_CHANGE_REQUEST_JSON_INVALID_SERIALNUMBER = "/assetsTestFiles/request/drone_status_change_request_invalid_serialnumber.json";
 
     // Wiremock response json file names
     public static final String DRONE_REGISTRATION_RESPONSE_JSON_SUCCESS = "/assetsTestFiles/response/drone_registration_response_success.json";
@@ -54,6 +70,20 @@ public final class TestConstants {
     public static final String DRONE_REGISTRATION_RESPONSE_JSON_CAPACITY_LOW = "/assetsTestFiles/response/drone_registration_response_capacity_low.json";
     public static final String DRONE_REGISTRATION_RESPONSE_JSON_CAPACITY_HIGH = "/assetsTestFiles/response/drone_registration_response_capacity_high.json";
     public static final String DRONE_REGISTRATION_RESPONSE_JSON_INVALID_WEIGHT_CAPACITY = "/assetsTestFiles/response/drone_registration_response_invalid_weight_capacity.json";
+    public static final String GET_DRONE_RESPONSE_JSON_SUCCESS = "/assetsTestFiles/response/get_drone_response_success.json";
+    public static final String GET_DRONE_RESPONSE_JSON_NOT_EXIST = "/assetsTestFiles/response/get_drone_response_drone_not_exist.json";
+    public static final String LOAD_MEDICATION_RESPONSE_JSON_SUCCESS = "/assetsTestFiles/response/load_medication_response_success.json";
+    public static final String LOAD_MEDICATION_RESPONSE_JSON_CODE_MANDATORY = "/assetsTestFiles/response/load_medication_response_code_mandatory.json";
+    public static final String LOAD_MEDICATION_RESPONSE_JSON_DRONE_NOT_OCCUPIED = "/assetsTestFiles/response/load_medication_response_drone_not_occupied.json";
+    public static final String LOAD_MEDICATION_RESPONSE_JSON_EXCEED_WEIGHT = "/assetsTestFiles/response/load_medication_response_exceed_weight.json";
+    public static final String LOAD_MEDICATION_RESPONSE_JSON_INVALID_CODE = "/assetsTestFiles/response/load_medication_response_invalid_code.json";
+    public static final String LOAD_MEDICATION_RESPONSE_JSON_INVALID_NAME = "/assetsTestFiles/response/load_medication_response_invalid_name.json";
+    public static final String LOAD_MEDICATION_RESPONSE_JSON_INVALID_SERIALNUMBER = "/assetsTestFiles/response/load_medication_response_invalid_serialnumber.json";
+    public static final String LOAD_MEDICATION_RESPONSE_JSON_LOW_CAPACITY = "/assetsTestFiles/response/load_medication_response_low_capacity.json";
+    public static final String LOAD_MEDICATION_RESPONSE_JSON_WEIGHT_MANDATORY = "/assetsTestFiles/response/load_medication_response_weight_mandatory.json";
+    public static final String LOAD_MEDICATION_RESPONSE_JSON_WITHOUT_NAME = "/assetsTestFiles/response/load_medication_response_without_name.json";
+    public static final String DRONE_STATUS_CHANGE_RESPONSE_JSON_SUCCESS = "/assetsTestFiles/response/drone_status_change_response_success.json";
+    public static final String DRONE_STATUS_CHANGE_RESPONSE_JSON_INVALID_SERIALNUMBER = "/assetsTestFiles/response/drone_status_change_response_invalid_serialnumber.json";
 
     // Images
     public static final String IMAGE_PNG = "image/image1.png";
@@ -103,5 +133,37 @@ public final class TestConstants {
         }
 
         return image;
+    }
+
+    /**
+     * Represent models
+     *
+     * @return model map
+     * @throws Exception
+     */
+    public static Map<String, Model> loadModels() throws Exception {
+        Map<String, Model> models = new ConcurrentHashMap<>();
+        models.put("Lightweight", new Model(1L, "Lightweight"));
+        models.put("Middleweight", new Model(2L, "Middleweight"));
+        models.put("Cruiserweight", new Model(3L, "Cruiserweight"));
+        models.put("Heavyweight", new Model(4L, "Heavyweight"));
+        return models;
+    }
+
+    /**
+     * Represent drone state
+     *
+     * @return state map
+     * @throws Exception
+     */
+    public static Map<String, State> loadStatus() throws Exception {
+        Map<String, State> status = new ConcurrentHashMap<>();
+        status.put("IDLE", new State(1L, "IDLE"));
+        status.put("LOADING", new State(2L, "LOADING"));
+        status.put("LOADED", new State(3L, "LOADED"));
+        status.put("DELIVERING", new State(4L, "DELIVERING"));
+        status.put("DELIVERED", new State(5L, "DELIVERED"));
+        status.put("RETURNING", new State(6L, "RETURNING"));
+        return status;
     }
 }

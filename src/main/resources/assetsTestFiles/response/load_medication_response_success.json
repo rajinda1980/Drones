@@ -1,0 +1,12 @@
+{
+  "createdDate": "2024-03-24T02:50:25.701595251",
+  "statusCode": 200,
+  "statusValue": "OK",
+  "message": "The loading of medication onto the drone was successful",
+  "object": {
+    "name": "MI0001",
+    "weight": "500",
+    "code": "AXP_112",
+    "serialNumber": "1001"
+  }
+}

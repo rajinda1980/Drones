@@ -1,0 +1,12 @@
+{
+  "timestamp": "2024-03-24T02:57:52.442974673",
+  "status": 400,
+  "detail": [
+    {
+      "message": "The weight is mandatory",
+      "fieldName": "weight",
+      "fieldValue": null
+    }
+  ],
+  "path": "/v1/api/medication/load"
+}

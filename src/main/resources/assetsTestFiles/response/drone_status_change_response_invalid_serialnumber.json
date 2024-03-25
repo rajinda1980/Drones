@@ -1,0 +1,10 @@
+{
+  "timestamp": "2024-03-25T09:53:16.128658734",
+  "status": 400,
+  "detail": [
+    {
+      "message": "The drone does not exist for the given serial number. Serial Number : 1004"
+    }
+  ],
+  "path": "/v1/api/drone/status"
+}

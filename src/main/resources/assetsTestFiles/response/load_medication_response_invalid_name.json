@@ -1,0 +1,12 @@
+{
+  "timestamp": "2024-03-24T02:55:33.976003481",
+  "status": 400,
+  "detail": [
+    {
+      "message": "Invalid medication name. Only letters, numbers, hyphens, and underscores are allowed in the name",
+      "fieldName": "name",
+      "fieldValue": "A#125_2345"
+    }
+  ],
+  "path": "/v1/api/medication/load"
+}

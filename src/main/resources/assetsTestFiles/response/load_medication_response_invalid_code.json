@@ -1,0 +1,12 @@
+{
+  "timestamp": "2024-03-24T03:07:06.303028048",
+  "status": 400,
+  "detail": [
+    {
+      "message": "Invalid medication code. Only upper case letters, underscore and numbers are allowed in the code",
+      "fieldName": "code",
+      "fieldValue": "AXP_sn_112"
+    }
+  ],
+  "path": "/v1/api/medication/load"
+}

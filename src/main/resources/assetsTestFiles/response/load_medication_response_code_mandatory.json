@@ -1,0 +1,12 @@
+{
+  "timestamp": "2024-03-24T03:04:49.541079588",
+  "status": 400,
+  "detail": [
+    {
+      "message": "The medication code is mandatory and must not exceed 100 characters",
+      "fieldName": "code",
+      "fieldValue": ""
+    }
+  ],
+  "path": "/v1/api/medication/load"
+}

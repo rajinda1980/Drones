@@ -35,8 +35,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class DispatchControllerIntegrationTest {
 
-    private static WireMockServer wireMockServer;
-    private String restDroneRegistrationUrl, serverDroneRegistrationUrl;
+    private static WireMockServer wireMockServer, wireMockServer_2;
+    private String restDroneRegistrationUrl, serverDroneRegistrationUrl,
+            serverGetDroneUrl, restGetDroneUrl, serverGetNonExistingDroneUrl, restGetNonExistingDroneUrl,
+            serverLoadMedicationUrl, restLoadMedicationUrl, serverDroneStatusChangeUrl, restDroneStatusChangeUrl;
     private TestRestTemplate restTemplate;
 
     @MockBean
@@ -46,19 +48,31 @@ public class DispatchControllerIntegrationTest {
     static void startUp(){
         wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
         wireMockServer.start();
+        wireMockServer_2 = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
+        wireMockServer_2.start();
     }
 
     @AfterAll
     static void destroy() {
         wireMockServer.shutdown();
+        wireMockServer_2.shutdown();
     }
 
     @BeforeEach
     void inti() {
         wireMockServer.resetAll();
+        wireMockServer_2.resetAll();
         restTemplate = new TestRestTemplate();
         serverDroneRegistrationUrl = TestConstants.REGISTER_DRONE_URL;
         restDroneRegistrationUrl = TestConstants.LOCALHOST + wireMockServer.port() + TestConstants.REGISTER_DRONE_URL;
+        serverGetDroneUrl = TestConstants.DRONE_GET_URL;
+        restGetDroneUrl = TestConstants.LOCALHOST + wireMockServer.port() + TestConstants.DRONE_GET_URL;
+        serverGetNonExistingDroneUrl = TestConstants.DRONE_GET_URL;
+        restGetNonExistingDroneUrl = TestConstants.LOCALHOST + wireMockServer_2.port() + TestConstants.DRONE_GET_URL;
+        serverLoadMedicationUrl = TestConstants.LOAD_MEDICATION_URL;
+        restLoadMedicationUrl = TestConstants.LOCALHOST + wireMockServer.port() + TestConstants.LOAD_MEDICATION_URL;
+        serverDroneStatusChangeUrl = TestConstants.DRONE_STATUS_CHANGE_URL;
+        restDroneStatusChangeUrl = TestConstants.LOCALHOST + wireMockServer.port() + TestConstants.DRONE_STATUS_CHANGE_URL;
     }
 
     /**
@@ -201,30 +215,234 @@ public class DispatchControllerIntegrationTest {
                                         .withBody(droneResponse_weight_capacity)
                         )
         );
+
+        // Get drone - success result
+        String getDrone_success = IOUtils.resourceToString(TestConstants.GET_DRONE_RESPONSE_JSON_SUCCESS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.get(serverGetDroneUrl + 1001)
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.OK.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(getDrone_success)
+                        )
+        );
+
+        /* ********************************* LOAD MEDICATION ********************************* */
+
+        String loadMedicationRequest_success = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_SUCCESS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String loadMedicationResponse_success = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_RESPONSE_JSON_SUCCESS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverLoadMedicationUrl)
+                        .withRequestBody(equalToJson(loadMedicationRequest_success))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.OK.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(loadMedicationResponse_success)
+                        )
+        );
+
+        String loadMedicationRequest_codeMandatory = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_CODE_MANDATORY, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String loadMedicationResponse_codeMandatory = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_RESPONSE_JSON_CODE_MANDATORY, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverLoadMedicationUrl)
+                        .withRequestBody(equalToJson(loadMedicationRequest_codeMandatory))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(loadMedicationResponse_codeMandatory)
+                        )
+        );
+
+        String loadMedicationRequest_notOccupied = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_DRONE_NOT_OCCUPIED, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String loadMedicationResponse_notOccupied = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_RESPONSE_JSON_DRONE_NOT_OCCUPIED, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverLoadMedicationUrl)
+                        .withRequestBody(equalToJson(loadMedicationRequest_notOccupied))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(loadMedicationResponse_notOccupied)
+                        )
+        );
+
+        String loadMedicationRequest_exceedWeight = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_EXCEED_WEIGHT, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String loadMedicationResponse_exceedWeight = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_RESPONSE_JSON_EXCEED_WEIGHT, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverLoadMedicationUrl)
+                        .withRequestBody(equalToJson(loadMedicationRequest_exceedWeight))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(loadMedicationResponse_exceedWeight)
+                        )
+        );
+
+        String loadMedicationRequest_invalidCode = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_INVALID_CODE, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String loadMedicationResponse_invalidCode = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_RESPONSE_JSON_INVALID_CODE, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverLoadMedicationUrl)
+                        .withRequestBody(equalToJson(loadMedicationRequest_invalidCode))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(loadMedicationResponse_invalidCode)
+                        )
+        );
+
+        String loadMedicationRequest_invalidName = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_INVALID_NAME, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String loadMedicationResponse_invalidName = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_RESPONSE_JSON_INVALID_NAME, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverLoadMedicationUrl)
+                        .withRequestBody(equalToJson(loadMedicationRequest_invalidName))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(loadMedicationResponse_invalidName)
+                        )
+        );
+
+        String loadMedicationRequest_invalidSerialNumber = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_INVALID_SERIALNUMBER, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String loadMedicationResponse_invalidSerialNumber = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_RESPONSE_JSON_INVALID_SERIALNUMBER, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverLoadMedicationUrl)
+                        .withRequestBody(equalToJson(loadMedicationRequest_invalidSerialNumber))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(loadMedicationResponse_invalidSerialNumber)
+                        )
+        );
+
+        String loadMedicationRequest_lowCapacity = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_LOW_CAPACITY, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String loadMedicationResponse_lowCapacity = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_RESPONSE_JSON_LOW_CAPACITY, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverLoadMedicationUrl)
+                        .withRequestBody(equalToJson(loadMedicationRequest_lowCapacity))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(loadMedicationResponse_lowCapacity)
+                        )
+        );
+
+        String loadMedicationRequest_weightMandatory = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_WEIGHT_MANDATORY, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String loadMedicationResponse_weightMandatory = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_RESPONSE_JSON_WEIGHT_MANDATORY, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverLoadMedicationUrl)
+                        .withRequestBody(equalToJson(loadMedicationRequest_weightMandatory))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(loadMedicationResponse_weightMandatory)
+                        )
+        );
+
+        String loadMedicationRequest_withoutName = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_WITHOUT_NAME, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String loadMedicationResponse_withoutName = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_RESPONSE_JSON_WITHOUT_NAME, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverLoadMedicationUrl)
+                        .withRequestBody(equalToJson(loadMedicationRequest_withoutName))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(loadMedicationResponse_withoutName)
+                        )
+        );
+
+        /* ********************************* STATUS CHANGE ********************************* */
+        String statusChangeRequest_success = IOUtils.resourceToString(TestConstants.DRONE_STATUS_CHANGE_REQUEST_JSON_SUCCESS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String statusChangeResponse_success = IOUtils.resourceToString(TestConstants.DRONE_STATUS_CHANGE_RESPONSE_JSON_SUCCESS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverDroneStatusChangeUrl)
+                        .withRequestBody(equalToJson(statusChangeRequest_success))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.OK.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(statusChangeResponse_success)
+                        )
+        );
+
+        String statusChangeRequest_invalidSN = IOUtils.resourceToString(TestConstants.DRONE_STATUS_CHANGE_REQUEST_JSON_INVALID_SERIALNUMBER, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        String statusChangeResponse_invalidSN = IOUtils.resourceToString(TestConstants.DRONE_STATUS_CHANGE_RESPONSE_JSON_INVALID_SERIALNUMBER, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.post(serverDroneStatusChangeUrl)
+                        .withRequestBody(equalToJson(statusChangeRequest_invalidSN))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(statusChangeResponse_invalidSN)
+                        )
+        );
+    }
+
+    /**
+     * Mock server 2 response
+     *
+     * @throws Exception
+     */
+    private void setStub2() throws Exception {
+        // Get drone - drone does not exist
+        String getDrone_droneNotExist = IOUtils.resourceToString(TestConstants.GET_DRONE_RESPONSE_JSON_NOT_EXIST, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer_2.stubFor(
+                WireMock.get(serverGetNonExistingDroneUrl + 1005)
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(getDrone_droneNotExist)
+                        )
+        );
     }
 
     @Test
-    @DisplayName("Test the integration for registering a drone - Happy path")
+    @DisplayName("Integration => Integration => Test registering a drone - Happy path")
     void testRegisterDroneInt_success() throws Exception {
         setStub();
 
         String request = IOUtils.resourceToString(TestConstants.DRONE_REGISTRATION_REQUEST_JSON_SUCCESS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
 
         ResponseEntity response = restTemplate.exchange(restDroneRegistrationUrl, HttpMethod.POST, setHeaders(request), String.class);
-        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
 
         JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
-        Assertions.assertEquals(Integer.parseInt(json.get("statusCode").toString()), HttpStatus.OK.value());
-        Assertions.assertEquals(json.get("statusValue").toString(), "\"" + HttpStatus.OK.getReasonPhrase() + "\"");
-        Assertions.assertEquals(json.get("message").toString(), "\"" + AppConstants.DRONE_REGISTERED + "\"");
-        Assertions.assertEquals(json.get("object").get("serialNumber").toString(), "\"1005\"");
-        Assertions.assertEquals(json.get("object").get("model").toString(), "\"Heavyweight\"");
-        Assertions.assertEquals(json.get("object").get("weight").toString(), "\"450\"");
-        Assertions.assertEquals(json.get("object").get("capacity").toString(), "\"100\"");
+        Assertions.assertEquals(HttpStatus.OK.value(), Integer.parseInt(json.get("statusCode").toString()));
+        Assertions.assertEquals("\"" + HttpStatus.OK.getReasonPhrase() + "\"", json.get("statusValue").toString());
+        Assertions.assertEquals("\"" + AppConstants.DRONE_REGISTERED + "\"", json.get("message").toString());
+        Assertions.assertEquals("\"1005\"", json.get("object").get("serialNumber").toString());
+        Assertions.assertEquals("\"Heavyweight\"", json.get("object").get("model").toString());
+        Assertions.assertEquals("\"450\"", json.get("object").get("weight").toString());
+        Assertions.assertEquals("\"100\"", json.get("object").get("capacity").toString());
     }
 
     @Test
-    @DisplayName("Test the integration for registering a drone - drone is registered")
+    @DisplayName("Integration => Test registering a drone - exception if the drone is registered")
     void testRegisterDroneInt_alreadyRegistered() throws Exception {
         setStub();
 
@@ -287,7 +505,7 @@ public class DispatchControllerIntegrationTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Test integration for exceptions")
+    @DisplayName("Integration => Test register drone - exceptions")
     @MethodSource
     void testRegisterDroneInt_exceptions(String request, Map<String, String> detail) throws Exception {
         setStub();
@@ -305,7 +523,7 @@ public class DispatchControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Test integration for multiple exceptions")
+    @DisplayName("Integration => Test register drone - multiple exceptions")
     void testRegisterDroneInt_multipleExceptions() throws Exception {
         setStub();
 
@@ -333,7 +551,7 @@ public class DispatchControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Test integration for invaid drone model")
+    @DisplayName("Integration => Test register drone - exception if drone model is invalid")
     void testRegisterDroneInt_InvalidModel() throws Exception {
         setStub();
 
@@ -347,6 +565,186 @@ public class DispatchControllerIntegrationTest {
         Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
         Assertions.assertEquals("\"" + TestConstants.REGISTER_DRONE_URL + "\"", json.get("path").toString());
         Assertions.assertEquals("\"" + TestConstants.INVALID_DRONE_MODEL + "\"", json.get("detail").get(0).get("message").toString());
+    }
+
+    @Test
+    @DisplayName("Integration => Test get drone details - happy path")
+    void testGetDrone_success() throws Exception {
+        setStub();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE);
+        HttpEntity entity = new HttpEntity(headers);
+        ResponseEntity response = restTemplate.exchange(restGetDroneUrl + 1001, HttpMethod.GET, entity, String.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertNotNull(json.get("createdDate").toString());
+        Assertions.assertEquals(HttpStatus.OK.value(), Integer.parseInt(json.get("statusCode").toString()));
+        Assertions.assertEquals("\"" + HttpStatus.OK.getReasonPhrase() + "\"", json.get("statusValue").toString());
+        Assertions.assertEquals("\"" + AppConstants.DRONE_INFO + "\"", json.get("message").toString());
+        Assertions.assertEquals("\"1001\"", json.get("object").get("serialNumber").toString());
+        Assertions.assertEquals("\"Heavyweight\"", json.get("object").get("model").toString());
+        Assertions.assertEquals("\"500\"", json.get("object").get("weight").toString());
+        Assertions.assertEquals("\"90\"", json.get("object").get("capacity").toString());
+        Assertions.assertEquals("\"IDLE\"", json.get("object").get("status").toString());
+    }
+
+    @Test
+    @DisplayName("Integration => Test get drone details - exception if drone does not exist ")
+    void testGetDrone_droneDoesNotExist() throws Exception {
+        setStub2();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE);
+        HttpEntity entity = new HttpEntity(headers);
+        ResponseEntity response = restTemplate.exchange(restGetNonExistingDroneUrl + 1005, HttpMethod.GET, entity, String.class);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertNotNull(json.get("timestamp").toString());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
+        Assertions.assertEquals("\"" + AppConstants.DRONE_DOES_NOT_EXIST + 1005 + "\"", json.get("detail").get(0).get("message").toString());
+    }
+
+    @Test
+    @DisplayName("Integration => Test load medication - Happy path")
+    void testLoadMedication_success() throws Exception {
+        setStub();
+
+        String request = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_SUCCESS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+
+        ResponseEntity response = restTemplate.exchange(restLoadMedicationUrl, HttpMethod.POST, setHeaders(request), String.class);
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK.value(), Integer.parseInt(json.get("statusCode").toString()));
+        Assertions.assertEquals("\"" + HttpStatus.OK.getReasonPhrase() + "\"", json.get("statusValue").toString());
+        Assertions.assertEquals("\"" + AppConstants.LOAD_MEDICATION_SUCCESS + "\"", json.get("message").toString());
+        Assertions.assertEquals("\"1001\"", json.get("object").get("serialNumber").toString());
+        Assertions.assertEquals("\"MI0001\"", json.get("object").get("name").toString());
+        Assertions.assertEquals("\"500\"", json.get("object").get("weight").toString());
+        Assertions.assertEquals("\"AXP_112\"", json.get("object").get("code").toString());
+    }
+
+    /**
+     * Value map
+     *
+     * @return Argument list
+     * @throws Exception
+     */
+    static Stream<Arguments> testLoadMedication_exceptions() throws Exception {
+        String codeMandatory = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_CODE_MANDATORY, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        Map<String, String> detailCodeMandatory = new ConcurrentHashMap<>();
+        detailCodeMandatory.put("message", "\"" + AppConstants.INVALID_MEDICATION_CODE_LENGTH + "\"");
+        detailCodeMandatory.put("fieldName", "\"code\"" );
+        detailCodeMandatory.put("fieldValue", "\"\"" );
+
+        String notOccupied = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_DRONE_NOT_OCCUPIED, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        Map<String, String> detailNO = new ConcurrentHashMap<>();
+        detailNO.put("message", "\"" + AppConstants.DRONE_NOT_OCCUPIED + "\"");
+
+        String exceedWeight = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_EXCEED_WEIGHT, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        Map<String, String> detailExceedWeight = new ConcurrentHashMap<>();
+        detailExceedWeight.put("message", "\"" + AppConstants.DRONE_OVERWEIGHT + "450 grams\"");
+
+        String invalidCode = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_INVALID_CODE, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        Map<String, String> detailIC = new ConcurrentHashMap<>();
+        detailIC.put("message", "\"" + AppConstants.INVALID_MEDICATION_CODE_TEXT + "\"");
+        detailIC.put("fieldName", "\"code\"" );
+        detailIC.put("fieldValue", "\"AXP_sn_112\"" );
+
+        String invalidName = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_INVALID_NAME, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        Map<String, String> detailName = new ConcurrentHashMap<>();
+        detailName.put("message", "\"" + AppConstants.INVALID_MEDICATION_NAME + "\"");
+        detailName.put("fieldName", "\"name\"" );
+        detailName.put("fieldValue", "\"A#125_2345\"" );
+
+        String invalidSN = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_INVALID_SERIALNUMBER, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        Map<String, String> detailSN= new ConcurrentHashMap<>();
+        detailSN.put("message", "\"" + AppConstants.DRONE_DOES_NOT_EXIST + "1002\"");
+
+        String lowCap = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_LOW_CAPACITY, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        Map<String, String> detailLCap = new ConcurrentHashMap<>();
+        detailLCap.put("message", "\"" + AppConstants.LOW_CAPACITY + "\"");
+
+        String weightMan = IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_WEIGHT_MANDATORY, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        Map<String, String> detailWMan = new ConcurrentHashMap<>();
+        detailWMan.put("message", "\"" + AppConstants.EMPTY_MEDICATION_WEIGHT + "\"");
+        detailWMan.put("fieldName", "\"weight\"" );
+        detailWMan.put("fieldValue", "null" );
+
+        String withoutName= IOUtils.resourceToString(TestConstants.LOAD_MEDICATION_REQUEST_JSON_WITHOUT_NAME, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        Map<String, String> detailWName = new ConcurrentHashMap<>();
+        detailWName.put("message", "\"" + AppConstants.MEDICATION_NAME_LENGTH_EXCEEDED + "\"");
+        detailWName.put("fieldName", "\"name\"" );
+        detailWName.put("fieldValue", "\"\"" );
+
+        return Stream.of(
+                Arguments.of(codeMandatory, detailCodeMandatory),
+                Arguments.of(notOccupied, detailNO),
+                Arguments.of(exceedWeight, detailExceedWeight),
+                Arguments.of(invalidCode, detailIC),
+                Arguments.of(invalidName, detailName),
+                Arguments.of(invalidSN, detailSN),
+                Arguments.of(lowCap, detailLCap),
+                Arguments.of(weightMan, detailWMan),
+                Arguments.of(withoutName, detailWName)
+        );
+    }
+
+    @ParameterizedTest
+    @DisplayName("Integration => Test load medication - exceptions")
+    @MethodSource
+    void testLoadMedication_exceptions(String request, Map<String, String> detail) throws Exception {
+        setStub();
+
+        ResponseEntity response = restTemplate.exchange(restLoadMedicationUrl, HttpMethod.POST, setHeaders(request), String.class);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertNotNull(json.get("timestamp").toString());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
+        Assertions.assertEquals("\"" + TestConstants.LOAD_MEDICATION_URL + "\"", json.get("path").toString());
+        Assertions.assertEquals(detail.get("message"), json.get("detail").get(0).get("message").toString());
+        if (detail.containsKey("fieldName") && detail.containsKey("fieldValue")) {
+            Assertions.assertEquals(detail.get("fieldName"), json.get("detail").get(0).get("fieldName").toString());
+            Assertions.assertEquals(detail.get("fieldValue"), json.get("detail").get(0).get("fieldValue").toString());
+        }
+    }
+
+    @Test
+    @DisplayName("Integration => Test drone status change - happy path")
+    void testStatusChange_success() throws Exception {
+        setStub();
+
+        String request = IOUtils.resourceToString(TestConstants.DRONE_STATUS_CHANGE_REQUEST_JSON_SUCCESS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+
+        ResponseEntity response = restTemplate.exchange(restDroneStatusChangeUrl, HttpMethod.POST, setHeaders(request), String.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK.value(), Integer.parseInt(json.get("statusCode").toString()));
+        Assertions.assertEquals("\"" + HttpStatus.OK.getReasonPhrase() + "\"", json.get("statusValue").toString() );
+        Assertions.assertEquals("\"" + AppConstants.DRONE_STATUS_CHANGE_SUCCESS + "1003\"", json.get("message").toString());
+        Assertions.assertEquals("\"1003\"", json.get("object").get("serialNumber").toString());
+        Assertions.assertEquals("\"LOADED\"", json.get("object").get("status").toString());
+    }
+
+    @Test
+    @DisplayName("Integration => Test drone status change - Invalid serial number")
+    void testStatusChange_invalidSerialnumber() throws Exception {
+        setStub();
+
+        String request = IOUtils.resourceToString(TestConstants.DRONE_STATUS_CHANGE_REQUEST_JSON_INVALID_SERIALNUMBER, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+
+        ResponseEntity response = restTemplate.exchange(restDroneStatusChangeUrl, HttpMethod.POST, setHeaders(request), String.class);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
+        Assertions.assertEquals("\"" + TestConstants.DRONE_STATUS_CHANGE_URL+ "\"", json.get("path").toString());
+        Assertions.assertEquals("\"" + AppConstants.DRONE_DOES_NOT_EXIST + "1004\"", json.get("detail").get(0).get("message").toString());
     }
 
     private HttpEntity setHeaders(String request) {

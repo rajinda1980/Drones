@@ -93,16 +93,16 @@ public class DispatchControllerTest {
         Gson gson = TestConstants.getFullyFledgedGson();
         ResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ResponseDTO.class);
 
-        Assertions.assertEquals(result.getResponse().getStatus(), HttpStatus.OK.value());
-        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK.value());
-        Assertions.assertEquals(response.getStatusValue(), HttpStatus.OK.getReasonPhrase());
-        Assertions.assertEquals(response.getMessage(), AppConstants.DRONE_REGISTERED);
+        Assertions.assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        Assertions.assertEquals(HttpStatus.OK.value(), response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK.getReasonPhrase(), response.getStatusValue());
+        Assertions.assertEquals(AppConstants.DRONE_REGISTERED, response.getMessage());
 
         Map fromResponse = (Map) response.getObject();
-        Assertions.assertEquals(fromResponse.get("serialNumber"), requestDTO.getSerialNumber());
-        Assertions.assertEquals(fromResponse.get("model"), requestDTO.getModel());
-        Assertions.assertEquals(fromResponse.get("weight").toString(), requestDTO.getWeight().toString());
-        Assertions.assertEquals(fromResponse.get("capacity").toString(), requestDTO.getCapacity().toString());
+        Assertions.assertEquals(requestDTO.getSerialNumber(), fromResponse.get("serialNumber"));
+        Assertions.assertEquals(requestDTO.getModel(), fromResponse.get("model"));
+        Assertions.assertEquals(requestDTO.getWeight().toString(), fromResponse.get("weight").toString());
+        Assertions.assertEquals(requestDTO.getCapacity().toString(), fromResponse.get("capacity").toString());
     }
 
     /**
@@ -190,16 +190,16 @@ public class DispatchControllerTest {
         Gson gson = TestConstants.getFullyFledgedGson();
         ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
 
-        Assertions.assertEquals(result.getResponse().getStatus(), expected.getStatus());
-        Assertions.assertEquals(response.getStatus(), expected.getStatus());
+        Assertions.assertEquals(expected.getStatus(), result.getResponse().getStatus());
+        Assertions.assertEquals(expected.getStatus(), response.getStatus());
         Assertions.assertTrue(response.getDetail().size() > 0);
-        Assertions.assertEquals(response.getPath().toString(), TestConstants.REGISTER_DRONE_URL);
+        Assertions.assertEquals(TestConstants.REGISTER_DRONE_URL, response.getPath().toString());
 
         Map fromResponse = (Map) response.getDetail().get(0);
         ErrorDetailDTO expectedErrorDetail = (ErrorDetailDTO)  expected.getDetail().get(0);
-        Assertions.assertEquals(fromResponse.get("message"), expectedErrorDetail.getMessage());
-        Assertions.assertEquals(fromResponse.get("fieldName"), expectedErrorDetail.getFieldName());
-        Assertions.assertEquals(fromResponse.get("fieldValue").toString(), expectedErrorDetail.getFieldValue());
+        Assertions.assertEquals(expectedErrorDetail.getMessage(), fromResponse.get("message"));
+        Assertions.assertEquals(expectedErrorDetail.getFieldName(), fromResponse.get("fieldName"));
+        Assertions.assertEquals(expectedErrorDetail.getFieldValue(), fromResponse.get("fieldValue").toString());
     }
 
     @Test
@@ -223,13 +223,13 @@ public class DispatchControllerTest {
         Gson gson = TestConstants.getFullyFledgedGson();
         ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
 
-        Assertions.assertEquals(result.getResponse().getStatus(), expected.getStatus());
-        Assertions.assertEquals(response.getStatus(), expected.getStatus());
+        Assertions.assertEquals(expected.getStatus(), result.getResponse().getStatus());
+        Assertions.assertEquals(expected.getStatus(), response.getStatus());
         Assertions.assertTrue(response.getDetail().size() > 0);
 
-        Assertions.assertEquals(response.getPath().toString(), TestConstants.REGISTER_DRONE_URL);
+        Assertions.assertEquals(TestConstants.REGISTER_DRONE_URL, response.getPath().toString());
         Map fromResponse = (Map) response.getDetail().get(0);
-        Assertions.assertEquals(fromResponse.get("message").toString(), errorDetailMode.getMessage());
+        Assertions.assertEquals(errorDetailMode.getMessage(), fromResponse.get("message").toString());
     }
 
     @Test
@@ -248,17 +248,17 @@ public class DispatchControllerTest {
         Gson gson = TestConstants.getFullyFledgedGson();
         ResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ResponseDTO.class);
 
-        Assertions.assertEquals(result.getResponse().getStatus(), HttpStatus.OK.value());
-        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK.value());
-        Assertions.assertEquals(response.getStatusValue(), HttpStatus.OK.getReasonPhrase());
-        Assertions.assertEquals(response.getMessage(), AppConstants.DRONE_INFO);
+        Assertions.assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        Assertions.assertEquals(HttpStatus.OK.value(), response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK.getReasonPhrase(), response.getStatusValue());
+        Assertions.assertEquals(AppConstants.DRONE_INFO, response.getMessage());
 
         Map fromResponse = (Map) response.getObject();
-        Assertions.assertEquals(fromResponse.get("serialNumber"), "S0001");
-        Assertions.assertEquals(fromResponse.get("model"), ((DroneDTO) responseDTO.getObject()).getModel());
-        Assertions.assertEquals(fromResponse.get("weight").toString(), ((DroneDTO) responseDTO.getObject()).getWeight().toString());
-        Assertions.assertEquals(fromResponse.get("capacity").toString(), ((DroneDTO) responseDTO.getObject()).getCapacity().toString());
-        Assertions.assertEquals(fromResponse.get("status").toString(), ((DroneDTO) responseDTO.getObject()).getStatus());
+        Assertions.assertEquals("S0001", fromResponse.get("serialNumber"));
+        Assertions.assertEquals(((DroneDTO) responseDTO.getObject()).getModel(), fromResponse.get("model"));
+        Assertions.assertEquals(((DroneDTO) responseDTO.getObject()).getWeight().toString(), fromResponse.get("weight").toString());
+        Assertions.assertEquals(((DroneDTO) responseDTO.getObject()).getCapacity().toString(), fromResponse.get("capacity").toString());
+        Assertions.assertEquals(((DroneDTO) responseDTO.getObject()).getStatus(), fromResponse.get("status").toString());
     }
 
     @Test
@@ -316,10 +316,10 @@ public class DispatchControllerTest {
         ResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ResponseDTO.class);
 
         Assertions.assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
-        Assertions.assertEquals(result.getResponse().getStatus(), HttpStatus.OK.value());
-        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK.value());
-        Assertions.assertEquals(response.getStatusValue(), HttpStatus.OK.getReasonPhrase());
-        Assertions.assertEquals(response.getMessage(), AppConstants.LOAD_MEDICATION_SUCCESS);
+        Assertions.assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        Assertions.assertEquals(HttpStatus.OK.value(), response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK.getReasonPhrase(), response.getStatusValue());
+        Assertions.assertEquals(AppConstants.LOAD_MEDICATION_SUCCESS, response.getMessage());
 
         Map fromResponse = (Map) response.getObject();
         Assertions.assertEquals("S0001", fromResponse.get("serialNumber"));
