@@ -113,7 +113,7 @@ public class MedicationServiceImpl implements MedicationService {
     public List<LoadedMedicationItemDTO> findLoadedMedicationItems(String serialNumber) throws LoadMedicationException {
         try {
             Optional<List<Medication>> optMedications = medicationRepository.findAllByDrone(serialNumber);
-            if (optMedications.isPresent()) {
+            if (optMedications.isPresent() && optMedications.get().size() > 0) {
                 List<Medication> medications = optMedications.get();
                 List<LoadedMedicationItemDTO> dtoList =
                         medications.stream()

@@ -1,0 +1,10 @@
+{
+  "timestamp": "2024-03-25T20:14:44.1971422",
+  "status": 400,
+  "detail": [
+    {
+      "message": "No medication items were found for the given serial number. Drone serial number : 1002"
+    }
+  ],
+  "path": "/v1/api/medication/find/1002"
+}
