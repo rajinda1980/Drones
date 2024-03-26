@@ -39,7 +39,8 @@ public class DispatchControllerIntegrationTest {
     private String restDroneRegistrationUrl, serverDroneRegistrationUrl,
             serverGetDroneUrl, restGetDroneUrl, serverGetNonExistingDroneUrl, restGetNonExistingDroneUrl,
             serverLoadMedicationUrl, restLoadMedicationUrl, serverDroneStatusChangeUrl, restDroneStatusChangeUrl,
-            serverLoadedMedicationsUrl, restLoadedMedicationsUrl;
+            serverLoadedMedicationsUrl, restLoadedMedicationsUrl, restLoadedMedicationsUrl2, serverFindIdleDronesUrl,
+            restFindIdleDronesUrl, restFindIdleDronesUrl2, serverGetBatteryLevelUrl, restGetBatteryLevelUrl, restGetBatteryLevelUrl2;
     private TestRestTemplate restTemplate;
 
     @MockBean
@@ -76,6 +77,13 @@ public class DispatchControllerIntegrationTest {
         restDroneStatusChangeUrl = TestConstants.LOCALHOST + wireMockServer.port() + TestConstants.DRONE_STATUS_CHANGE_URL;
         serverLoadedMedicationsUrl = TestConstants.LOADED_MEDICATION_ITEM_URL;
         restLoadedMedicationsUrl = TestConstants.LOCALHOST + wireMockServer.port() + TestConstants.LOADED_MEDICATION_ITEM_URL;
+        restLoadedMedicationsUrl2 = TestConstants.LOCALHOST + wireMockServer_2.port() + TestConstants.LOADED_MEDICATION_ITEM_URL;
+        serverFindIdleDronesUrl = TestConstants.FIND_IDLE_DRONES;
+        restFindIdleDronesUrl = TestConstants.LOCALHOST + wireMockServer.port() + TestConstants.FIND_IDLE_DRONES;
+        restFindIdleDronesUrl2 = TestConstants.LOCALHOST + wireMockServer_2.port() + TestConstants.FIND_IDLE_DRONES;
+        serverGetBatteryLevelUrl = TestConstants.GET_BATTERY_LEVEL;
+        restGetBatteryLevelUrl = TestConstants.LOCALHOST + wireMockServer.port() + TestConstants.GET_BATTERY_LEVEL;
+        restGetBatteryLevelUrl2 = TestConstants.LOCALHOST + wireMockServer_2.port() + TestConstants.GET_BATTERY_LEVEL;
     }
 
     /**
@@ -418,6 +426,33 @@ public class DispatchControllerIntegrationTest {
                         )
         );
 
+        /* ********************************* FIND IDLE DRONES ********************************* */
+
+        String findIdleDronesResponse_success = IOUtils.resourceToString(TestConstants.FIND_IDLE_DRONES_JSON_SUCCESS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer.stubFor(
+                WireMock.get(serverFindIdleDronesUrl)
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.OK.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(findIdleDronesResponse_success)
+                        )
+        );
+
+        /* ********************************* DRONE BATTERY LEVEL ********************************* */
+
+        wireMockServer.stubFor(
+                WireMock.get(serverGetBatteryLevelUrl + 3005)
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.OK.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody("100")
+                        )
+        );
+
     }
 
     /**
@@ -442,7 +477,7 @@ public class DispatchControllerIntegrationTest {
         /* ********************************* FIND LOADED MEDICATION ********************************* */
 
         String loadedMedicationResponse_noitem = IOUtils.resourceToString(TestConstants.LOADED_MEDICATION_RESPONSE_JSON_NO_MEDICATIONS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
-        wireMockServer.stubFor(
+        wireMockServer_2.stubFor(
                 WireMock.get(serverLoadedMedicationsUrl + 1002)
                         .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
                         .willReturn(
@@ -450,6 +485,34 @@ public class DispatchControllerIntegrationTest {
                                         .withStatus(HttpStatus.BAD_REQUEST.value())
                                         .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
                                         .withBody(loadedMedicationResponse_noitem)
+                        )
+        );
+
+        /* ********************************* FIND IDLE DRONES ********************************* */
+
+        String findIdleDronesResponse_noItem = IOUtils.resourceToString(TestConstants.FIND_IDLE_DRONES_JSON_NO_RECORDS, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer_2.stubFor(
+                WireMock.get(serverFindIdleDronesUrl)
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(findIdleDronesResponse_noItem)
+                        )
+        );
+
+        /* ********************************* DRONE BATTERY LEVEL ********************************* */
+
+        String getBatteryLevel_invalidSN = IOUtils.resourceToString(TestConstants.GET_BATTERY_LEVEL_JSON_INVALID_SERIALNUMBER, Charset.forName(TestConstants.CHARSET_FOR_FILE_TRANSFORM));
+        wireMockServer_2.stubFor(
+                WireMock.get(serverGetBatteryLevelUrl)
+                        .withHeader(HttpHeaders.CONTENT_TYPE, containing(AppConstants.CONTENT_TYPE))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.BAD_REQUEST.value())
+                                        .withHeader(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE)
+                                        .withBody(getBatteryLevel_invalidSN)
                         )
         );
     }
@@ -816,7 +879,7 @@ public class DispatchControllerIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE);
         HttpEntity entity = new HttpEntity(headers);
-        ResponseEntity response = restTemplate.exchange(restLoadedMedicationsUrl + 1002, HttpMethod.GET, entity, String.class);
+        ResponseEntity response = restTemplate.exchange(restLoadedMedicationsUrl2 + 1002, HttpMethod.GET, entity, String.class);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
         JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
@@ -824,6 +887,80 @@ public class DispatchControllerIntegrationTest {
         Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
         Assertions.assertEquals("\"" + TestConstants.LOADED_MEDICATION_ITEM_URL + "1002\"", json.get("path").toString());
         Assertions.assertEquals("\"" + AppConstants.NO_MEDICATION_ITEMS_FOUND + "1002\"", json.get("detail").get(0).get("message").toString());
+    }
+
+    @Test
+    @DisplayName("Integration => Test case for verifying finding idle drones - happy path")
+    void testFindIdleDrones_success() throws Exception {
+        setStub();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE);
+        HttpEntity entity = new HttpEntity(headers);
+        ResponseEntity response = restTemplate.exchange(restFindIdleDronesUrl, HttpMethod.GET, entity, String.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertEquals("\"1001\"", json.get(0).get("serialNumber").toString());
+        Assertions.assertEquals("\"Lightweight\"", json.get(0).get("model").toString());
+        Assertions.assertEquals("\"200\"", json.get(0).get("weight").toString());
+        Assertions.assertEquals("\"100\"", json.get(0).get("capacity").toString());
+
+        Assertions.assertEquals("\"1002\"", json.get(1).get("serialNumber").toString());
+        Assertions.assertEquals("\"Lightweight\"", json.get(1).get("model").toString());
+        Assertions.assertEquals("\"200\"", json.get(1).get("weight").toString());
+        Assertions.assertEquals("\"100\"", json.get(1).get("capacity").toString());
+    }
+
+    @Test
+    @DisplayName("Integration => Test case for verifying finding idle drones - exception")
+    void testFindIdleDrones_exception() throws Exception {
+        setStub2();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE);
+        HttpEntity entity = new HttpEntity(headers);
+        ResponseEntity response = restTemplate.exchange(restFindIdleDronesUrl2, HttpMethod.GET, entity, String.class);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertNotNull(json.get("timestamp").toString());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
+        Assertions.assertEquals("\"" + TestConstants.FIND_IDLE_DRONES + "\"", json.get("path").toString());
+        Assertions.assertEquals("\"" + AppConstants.NO_AVAILABLE_DRONE_FOUND + "\"", json.get("detail").get(0).get("message").toString());
+    }
+
+    @Test
+    @DisplayName("Integration => Test case for verifying get battery level - happy path")
+    void testGetDroneBatteryLevel_success() throws Exception {
+        setStub();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE);
+        HttpEntity entity = new HttpEntity(headers);
+        ResponseEntity response = restTemplate.exchange(restGetBatteryLevelUrl + 3005, HttpMethod.GET, entity, String.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertEquals("100", json.toString());
+    }
+
+    @Test
+    @DisplayName("Integration => Test case for verifying get battery level - exception")
+    void testGetDroneBatteryLevel_exception() throws Exception {
+        setStub2();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, AppConstants.CONTENT_TYPE);
+        HttpEntity entity = new HttpEntity(headers);
+        ResponseEntity response = restTemplate.exchange(restGetBatteryLevelUrl2, HttpMethod.GET, entity, String.class);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        JsonNode json = new ObjectMapper().readTree(response.getBody().toString());
+        Assertions.assertNotNull(json.get("timestamp").toString());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), Integer.parseInt(json.get("status").toString()));
+        Assertions.assertEquals("\"" + TestConstants.GET_BATTERY_LEVEL + "1003\"", json.get("path").toString());
+        Assertions.assertEquals("\"" + AppConstants.DRONE_DOES_NOT_EXIST + "1003\"", json.get("detail").get(0).get("message").toString());
     }
 
     private HttpEntity setHeaders(String request) {

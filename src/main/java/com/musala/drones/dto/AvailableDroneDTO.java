@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 
@@ -16,6 +17,7 @@ import java.io.Serializable;
  */
 @AllArgsConstructor
 @Getter
+@Setter
 public class AvailableDroneDTO implements Serializable {
 
     @JsonProperty("serialNumber")
@@ -24,6 +26,7 @@ public class AvailableDroneDTO implements Serializable {
     @JsonProperty("model")
     private String model;
 
+    @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="%,d")
     @JsonProperty("weight")
     private Integer weight;
 

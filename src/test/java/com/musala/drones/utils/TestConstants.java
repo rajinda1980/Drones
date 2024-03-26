@@ -37,6 +37,8 @@ public final class TestConstants {
     public static final String INVALID_DRONE_MODEL = "The model must be one of the following values: [Middleweight, Cruiserweight, Lightweight, Heavyweight]";
     public static final String DRONE_STATUS_CHANGE_URL = "/v1/api/drone/status";
     public static final String LOADED_MEDICATION_ITEM_URL = "/v1/api/medication/find/";
+    public static final String FIND_IDLE_DRONES = "/v1/api/drone/find/idle";
+    public static final String GET_BATTERY_LEVEL = "/v1/api/drone/battery-level/";
 
     // Wiremock request json file names
     public static final String DRONE_REGISTRATION_REQUEST_JSON_SUCCESS = "/assetsTestFiles/request/drone_registration_request_success.json";
@@ -87,6 +89,9 @@ public final class TestConstants {
     public static final String DRONE_STATUS_CHANGE_RESPONSE_JSON_INVALID_SERIALNUMBER = "/assetsTestFiles/response/drone_status_change_response_invalid_serialnumber.json";
     public static final String LOADED_MEDICATION_RESPONSE_JSON_SUCCESS = "/assetsTestFiles/response/loaded_medication_response_success.json";
     public static final String LOADED_MEDICATION_RESPONSE_JSON_NO_MEDICATIONS = "/assetsTestFiles/response/loaded_medication_response_no_medications.json";
+    public static final String FIND_IDLE_DRONES_JSON_SUCCESS = "/assetsTestFiles/response/find_idle_drones_response_success.json";
+    public static final String FIND_IDLE_DRONES_JSON_NO_RECORDS = "/assetsTestFiles/response/find_idle_drones_response_no_records.json";
+    public static final String GET_BATTERY_LEVEL_JSON_INVALID_SERIALNUMBER = "/assetsTestFiles/response/get_battery_level_response_invalid_serialnumber.json";
 
     // Images
     public static final String IMAGE_PNG = "image/image1.png";
