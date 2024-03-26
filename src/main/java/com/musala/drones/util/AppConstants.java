@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public final class AppConstants {
 
-    public static final String CONTENT_TYPE = "application/json; charset=UTF-8";
+    public static final String CONTENT_TYPE = "application/json";
     public static final String SERIAL_NUMBER_LENGTH_EXCEED = "The serial number is mandatory and must not exceed 100 characters";
     public static final String INVALID_MODEL = "The model must be one of the following values: ";
     public static final String DRONE_WEIGHT_LOW = "The drone weight must be greater than or equal to 1 gram";

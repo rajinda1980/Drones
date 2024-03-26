@@ -147,7 +147,7 @@ public class DroneServiceImpl implements DroneService {
     public List<AvailableDroneDTO> findIdleDrones() throws DroneSearchException {
         try {
             Optional<List<Drone>> optDrones = droneRepository.findAllByState("IDLE");
-            if (optDrones.isPresent()) {
+            if (optDrones.isPresent() && optDrones.get().size() > 0) {
                 List<Drone> drones = optDrones.get();
                 List<AvailableDroneDTO> availableDroneDTOS =
                         drones.stream()

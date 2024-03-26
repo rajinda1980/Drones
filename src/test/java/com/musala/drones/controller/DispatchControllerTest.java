@@ -452,9 +452,6 @@ public class DispatchControllerTest {
         Assertions.assertEquals(5, response.size());
 
         String base64String = Base64.getEncoder().encodeToString(TestConstants.getImage("PNG"));
-        String imageJson = gson.toJson(base64String);
-        // Remove first and last double quotes added by gson
-        String imageOutput =  imageJson.substring(1, imageJson.length() - 1);
 
         for (int i = 0; i < 5; i++) {
             LinkedTreeMap mapItem = (LinkedTreeMap) response.get(i);
@@ -462,7 +459,7 @@ public class DispatchControllerTest {
             Assertions.assertTrue(mapItem.get("name").toString().matches("^(UT5510-1420|UT5510-1421|UT5510-1422|UT5510-1423|UT5510-1424)$"));
             Assertions.assertTrue(mapItem.get("code").toString().matches("^(BT-4850|BT-4851|BT-4852|BT-4853|BT-4854)$"));
             Assertions.assertTrue(mapItem.get("weight").toString().matches("^(150|200|250|300|350)$"));
-            Assertions.assertEquals(imageOutput, mapItem.get("image").toString());
+            Assertions.assertEquals(base64String, mapItem.get("image"));
         }
     }
 
@@ -487,6 +484,89 @@ public class DispatchControllerTest {
         Assertions.assertEquals(errMessage, ((Map) response.getDetail().get(0)).get("message"));
     }
 
+    @Test
+    @DisplayName("Unit Test => Test case for verifying find available drones controller method - Happy path")
+    void testFindAvailableDrones_success() throws Exception {
+        Mockito.when(droneService.findIdleDrones()).thenReturn(getAvailableDroneDTOSList());
+
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(TestConstants.FIND_IDLE_DRONES)
+                                .contentType(AppConstants.CONTENT_TYPE)
+                ).andReturn();
+
+        Gson gson = TestConstants.getFullyFledgedGson();
+        List response = gson.fromJson(result.getResponse().getContentAsString(), List.class);
+        Assertions.assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        Assertions.assertEquals(5, response.size());
+
+        for (int i = 0; i < 5; i++) {
+            LinkedTreeMap mapItem = (LinkedTreeMap) response.get(i);
+            Assertions.assertTrue(mapItem.get("serialNumber").toString().matches("^(3001|3002|3003|3004|3005)$"));
+            Assertions.assertTrue(mapItem.get("model").toString().matches("^(UT3320-100|UT3320-200|UT3320-300|UT3320-400|UT3320-500)$"));
+            Assertions.assertTrue(mapItem.get("weight").toString().matches("^(250|300|350|400|500)$"));
+            Assertions.assertTrue(mapItem.get("capacity").toString().matches("^(10|50|60|80|100)$"));
+        }
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test case for verifying find available drones controller method - exceptions")
+    void testFindAvailableDrones_exception() throws Exception {
+        String errMessage = AppConstants.NO_AVAILABLE_DRONE_FOUND;
+
+        Mockito.doThrow(new DroneSearchException(AppConstants.NO_AVAILABLE_DRONE_FOUND)).when(droneService).findIdleDrones();
+
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(TestConstants.FIND_IDLE_DRONES)
+                                .contentType(AppConstants.CONTENT_TYPE)
+                ).andReturn();
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
+        Assertions.assertEquals(errMessage, ((Map) response.getDetail().get(0)).get("message"));
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test case for verifying find battery level controller method - Happy path")
+    void testGetDroneBatteryLevel_success() throws Exception {
+        Mockito.when(droneService.getDroneBatteryLevel(isA(String.class))).thenReturn(50);
+
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(TestConstants.GET_BATTERY_LEVEL + "3005")
+                                .contentType(AppConstants.CONTENT_TYPE)
+                ).andReturn();
+
+        Gson gson = TestConstants.getFullyFledgedGson();
+        Integer response = gson.fromJson(result.getResponse().getContentAsString(), Integer.class);
+        Assertions.assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        Assertions.assertEquals(50, response);
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test case for verifying find battery level controller method - exceptions")
+    void testGetDroneBatteryLevel_exception() throws Exception {
+        String errMessage = AppConstants.DRONE_DOES_NOT_EXIST;
+
+        Mockito.doThrow(new DroneSearchException(AppConstants.DRONE_DOES_NOT_EXIST)).when(droneService).getDroneBatteryLevel(isA(String.class));
+
+        MvcResult result =
+                mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(TestConstants.GET_BATTERY_LEVEL + "3005")
+                                .contentType(AppConstants.CONTENT_TYPE)
+                ).andReturn();
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        Gson gson = TestConstants.getFullyFledgedGson();
+        ErrorResponseDTO response = gson.fromJson(result.getResponse().getContentAsString(), ErrorResponseDTO.class);
+        Assertions.assertEquals(errMessage, ((Map) response.getDetail().get(0)).get("message"));
+    }
     private ResponseDTO getDroneResponseDTO_success() throws Exception{
         ResponseDTO responseDTO =
                 new ResponseDTO(LocalDateTime.now(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), AppConstants.DRONE_REGISTERED, getDroneRequestDTO());
@@ -537,6 +617,16 @@ public class DispatchControllerTest {
                 new LoadedMedicationItemDTO("2001", "UT5510-1422", "BT-4852", 150, TestConstants.getImage("PNG")),
                 new LoadedMedicationItemDTO("2001", "UT5510-1423", "BT-4853", 200, TestConstants.getImage("PNG")),
                 new LoadedMedicationItemDTO("2001", "UT5510-1424", "BT-4854", 300, TestConstants.getImage("PNG"))
+        );
+    }
+
+    private List<AvailableDroneDTO> getAvailableDroneDTOSList() throws Exception {
+        return List.of(
+                new AvailableDroneDTO("3001", "UT3320-100", 400, 100),
+                new AvailableDroneDTO("3002", "UT3320-200", 250, 60),
+                new AvailableDroneDTO("3003", "UT3320-300", 350, 80),
+                new AvailableDroneDTO("3004", "UT3320-400", 500, 10),
+                new AvailableDroneDTO("3005", "UT3320-500", 300, 50)
         );
     }
 

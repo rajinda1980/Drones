@@ -4,10 +4,7 @@ import com.musala.drones.datamodel.data.Drone;
 import com.musala.drones.datamodel.data.Model;
 import com.musala.drones.datamodel.data.State;
 import com.musala.drones.datamodel.repository.DroneRepository;
-import com.musala.drones.dto.DroneDTO;
-import com.musala.drones.dto.DroneRequestDTO;
-import com.musala.drones.dto.DroneStatusChangeRequestDTO;
-import com.musala.drones.dto.ResponseDTO;
+import com.musala.drones.dto.*;
 import com.musala.drones.exception.DroneRegistrationException;
 import com.musala.drones.exception.DroneSearchException;
 import com.musala.drones.exception.DroneStatusException;
@@ -25,6 +22,8 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -52,7 +51,7 @@ public class DroneServiceTest {
     }
 
     @Test
-    @DisplayName("Test the functionality for registering a drone - Happy path")
+    @DisplayName("Unit Test => Test the functionality for registering a drone - Happy path")
     void testRegisterDrone_success() throws Exception {
         Mockito.when(cacheService.getDroneModels()).thenReturn(TestConstants.loadModels());
         Mockito.when(cacheService.getDroneStates()).thenReturn(TestConstants.loadStatus());
@@ -75,7 +74,7 @@ public class DroneServiceTest {
     }
 
     @Test
-    @DisplayName("Test the functionality for registering a drone - Exception path. Prerequisites : Drone is registered to given serial number")
+    @DisplayName("Unit Test => Test the functionality for registering a drone - Exception path. Prerequisites : Drone is registered to given serial number")
     void testRegisterDrone_DroneExist() throws Exception {
         Drone drone = getDrone();
         DroneRequestDTO requestDTO = getRequestDTO();
@@ -89,7 +88,7 @@ public class DroneServiceTest {
     }
 
     @Test
-    @DisplayName("Test the functionality to get drone - success path")
+    @DisplayName("Unit Test => Test the functionality to get drone - success path")
     void testGetDrone_success() throws Exception {
         Mockito.when(droneRepository.findById("D0001")).thenReturn(Optional.of(getDrone()));
         ResponseDTO responseDTO = droneService.getDrone("D0001");
@@ -108,7 +107,7 @@ public class DroneServiceTest {
     }
 
     @Test
-    @DisplayName("Test the functionality to get drone - Exception if drone does not exist")
+    @DisplayName("Unit Test => Test the functionality to get drone - Exception if drone does not exist")
     void testGetDrone_droneNotExist() throws Exception {
         Mockito.when(droneRepository.findById("S0001")).thenReturn(Optional.empty());
         DroneSearchException exception =
@@ -118,7 +117,7 @@ public class DroneServiceTest {
     }
 
     @Test
-    @DisplayName("Test the functionality to change drone status - happy path")
+    @DisplayName("Unit Test => Test the functionality to change drone status - happy path")
     void testChangeStatus_success() throws Exception {
         Mockito.when(cacheService.getDroneStates()).thenReturn(TestConstants.loadStatus());
         Drone drone = getDrone();
@@ -142,7 +141,7 @@ public class DroneServiceTest {
     }
 
     @Test
-    @DisplayName("Test the functionality to change drone status - Drone does not exist")
+    @DisplayName("Unit Test => Test the functionality to change drone status - Drone does not exist")
     void testChangeStatus_exception() throws Exception {
         Mockito.when(droneRepository.findById("D0001")).thenReturn(Optional.empty());
         DroneStatusChangeRequestDTO requestDTO = new DroneStatusChangeRequestDTO("D0001", "LOADED");
@@ -153,6 +152,74 @@ public class DroneServiceTest {
                         () -> droneService.changeStatus(requestDTO)
                 );
         Assertions.assertEquals(AppConstants.DRONE_DOES_NOT_EXIST + requestDTO.getSerialNumber(), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test the functionality to find idle drones - happy path")
+    void testFindIdleDrones_success() throws Exception {
+        Mockito.when(cacheService.getDroneModels()).thenReturn(TestConstants.loadModels());
+        Mockito.when(cacheService.getDroneStates()).thenReturn(TestConstants.loadStatus());
+
+        List<Drone> listDrones =
+                        List.of(
+                                new Drone("2005", cacheService.getDroneModels().get("Lightweight"), 150, 75, cacheService.getDroneStates().get("IDLE")),
+                                new Drone("2006", cacheService.getDroneModels().get("Middleweight"), 100, 100, cacheService.getDroneStates().get("IDLE")),
+                                new Drone("2007", cacheService.getDroneModels().get("Lightweight"), 300, 60, cacheService.getDroneStates().get("IDLE")),
+                                new Drone("2008", cacheService.getDroneModels().get("Heavyweight"), 400, 85, cacheService.getDroneStates().get("IDLE")),
+                                new Drone("2009", cacheService.getDroneModels().get("Cruiserweight"), 150, 15, cacheService.getDroneStates().get("IDLE")),
+                                new Drone("2010", cacheService.getDroneModels().get("Heavyweight"), 500, 100, cacheService.getDroneStates().get("IDLE"))
+                        );
+
+        Mockito.when(droneRepository.findAllByState("IDLE")).thenReturn(Optional.of(listDrones));
+
+        List<String> serialNumbers = Arrays.asList("2005", "2006", "2007", "2008", "2009", "2010");
+        List<String> models = Arrays.asList("Lightweight", "Middleweight", "Cruiserweight", "Heavyweight");
+        List<Integer> weights = Arrays.asList(100, 150, 300, 400, 500);
+        List<Integer> capacities = Arrays.asList(15, 60, 75, 85, 100, 100);
+
+        List<AvailableDroneDTO> list = droneService.findIdleDrones();
+
+        Assertions.assertTrue(listDrones.size() == list.size());
+        for (int i = 0; i < 6; i++) {
+            Assertions.assertTrue(serialNumbers.contains(list.get(i).getSerialNumber()));
+            Assertions.assertTrue(models.contains(list.get(i).getModel()));
+            Assertions.assertTrue(weights.contains(list.get(i).getWeight().intValue()));
+            Assertions.assertTrue(capacities.contains(list.get(i).getCapacity().intValue()));
+        }
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test the functionality to find idle drones - no idle drones")
+    void testFindIdleDrones_exception() throws Exception {
+        Mockito.when(droneRepository.findAllByState("IDLE")).thenReturn(Optional.empty());
+
+        DroneSearchException exception =
+                Assertions.assertThrows(
+                        DroneSearchException.class,
+                        () -> droneService.findIdleDrones()
+                );
+        Assertions.assertEquals(AppConstants.NO_AVAILABLE_DRONE_FOUND, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test the functionality to get drone battery level - happy path")
+    void testGetDroneBatteryLevel_success() throws Exception {
+        Mockito.when(droneRepository.findById("D0001")).thenReturn(Optional.of(getDrone()));
+        Integer capacity = droneService.getDroneBatteryLevel("D0001");
+        Assertions.assertEquals(100, capacity);
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test the functionality to get drone battery level - invalid serial number")
+    void testGetDroneBatteryLevel_exception() throws Exception {
+        Mockito.when(droneRepository.findById("D0001")).thenReturn(Optional.empty());
+
+        DroneSearchException exception =
+                Assertions.assertThrows(
+                        DroneSearchException.class,
+                        () -> droneService.getDroneBatteryLevel("D0001")
+                );
+        Assertions.assertEquals(AppConstants.DRONE_DOES_NOT_EXIST + "D0001", exception.getMessage());
     }
 
     private Drone getDrone() {
@@ -166,4 +233,5 @@ public class DroneServiceTest {
         DroneRequestDTO requestDTO = new DroneRequestDTO("D001", "Middleweight", 150, 100);
         return requestDTO;
     }
+
 }

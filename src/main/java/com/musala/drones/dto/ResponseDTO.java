@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
  */
 @AllArgsConstructor
 @Getter
-//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponseDTO implements Serializable {
 
     @JsonProperty("createdDate")
