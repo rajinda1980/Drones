@@ -44,6 +44,7 @@ public final class AppConstants {
 
     public static final String NO_MEDICATION_ITEMS_FOUND = "No medication items were found for the given serial number. Drone serial number : ";
     public static final String NO_AVAILABLE_DRONE_FOUND = "Drones are not available. Please try again later";
+    public static final String SCHEDULE_NO_DRONE_FOUND = "Drones are not registered";
 
     // Regular expressions
     public static final String REGEXP_DRONE_MODEL = "^(Lightweight|Middleweight|Cruiserweight|Heavyweight)$";

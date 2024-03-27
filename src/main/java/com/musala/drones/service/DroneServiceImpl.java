@@ -1,6 +1,8 @@
 package com.musala.drones.service;
 
 import com.musala.drones.datamodel.data.Drone;
+import com.musala.drones.datamodel.data.DroneAudit;
+import com.musala.drones.datamodel.repository.DroneAuditRepository;
 import com.musala.drones.datamodel.repository.DroneRepository;
 import com.musala.drones.dto.*;
 import com.musala.drones.exception.DroneRegistrationException;
@@ -10,8 +12,10 @@ import com.musala.drones.util.AppConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,10 +33,12 @@ public class DroneServiceImpl implements DroneService {
 
     private CacheService cacheService;
     private DroneRepository droneRepository;
+    private DroneAuditRepository droneAuditRepository;
 
-    public DroneServiceImpl(CacheService cacheService, DroneRepository droneRepository) {
+    public DroneServiceImpl(CacheService cacheService, DroneRepository droneRepository, DroneAuditRepository droneAuditRepository) {
         this.cacheService = cacheService;
         this.droneRepository = droneRepository;
+        this.droneAuditRepository = droneAuditRepository;
     }
 
     /**
@@ -193,6 +199,35 @@ public class DroneServiceImpl implements DroneService {
                     serialNumber, exception.getMessage());
             throw new DroneSearchException(exception.getMessage());
         }
+    }
+
+    /**
+     * Schedule check of battery level check
+     *
+     * @throws Exception
+     */
+    @Transactional
+    public void checkDroneBatteryLevel() throws Exception {
+        List<Drone> drones = droneRepository.findAll();
+
+        if (drones.isEmpty()) {
+            throw new Exception(AppConstants.SCHEDULE_NO_DRONE_FOUND);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String auditId = now.format(pattern);
+
+        List<DroneAudit> droneAuditList =
+                drones.stream()
+                        .map(
+                                d -> {
+                                    DroneAudit audit = new DroneAudit(auditId, d.getSerialNumber(), d.getCapacity(), LocalDateTime.now());
+                                    return audit;
+                                }
+                        ).collect(Collectors.toList());
+
+        droneAuditRepository.saveAll(droneAuditList);
     }
 
     /**
