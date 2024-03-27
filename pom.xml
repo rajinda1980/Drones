@@ -30,6 +30,7 @@
     <openapi.version>2.2.0</openapi.version>
     <maven.plugin.version>2.7.3</maven.plugin.version>
     <maven.cyclonedx.version>2.7.1</maven.cyclonedx.version>
+    <jacoco.Version>0.8.10</jacoco.Version>
   </properties>
 
   <dependencies>
@@ -126,6 +127,14 @@
     </dependency>
     <!-- Swagger implementation - End -->
 
+    <!-- SonarQube implementation - Start -->
+    <dependency>
+      <groupId>org.jacoco</groupId>
+      <artifactId>jacoco-maven-plugin</artifactId>
+      <version>${jacoco.Version}</version>
+    </dependency>
+    <!-- SonarQube implementation - End -->
+
   </dependencies>
 
   <build>
@@ -141,6 +150,26 @@
           <execution>
             <goals>
               <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.Version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>report</goal>
             </goals>
           </execution>
         </executions>
