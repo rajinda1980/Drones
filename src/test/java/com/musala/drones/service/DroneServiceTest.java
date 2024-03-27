@@ -3,6 +3,7 @@ package com.musala.drones.service;
 import com.musala.drones.datamodel.data.Drone;
 import com.musala.drones.datamodel.data.Model;
 import com.musala.drones.datamodel.data.State;
+import com.musala.drones.datamodel.repository.DroneAuditRepository;
 import com.musala.drones.datamodel.repository.DroneRepository;
 import com.musala.drones.dto.*;
 import com.musala.drones.exception.DroneRegistrationException;
@@ -22,6 +23,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +46,9 @@ public class DroneServiceTest {
 
     @Mock
     CacheServiceImpl cacheService;
+
+    @Mock
+    DroneAuditRepository droneAuditRepository;
 
     @BeforeEach
     void init() {
@@ -220,6 +225,40 @@ public class DroneServiceTest {
                         () -> droneService.getDroneBatteryLevel("D0001")
                 );
         Assertions.assertEquals(AppConstants.DRONE_DOES_NOT_EXIST + "D0001", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test the functionality to checkDroneBatteryLevel - happy path")
+    void testCheckDroneBatteryLevel_success() throws Exception {
+        Mockito.when(cacheService.getDroneModels()).thenReturn(TestConstants.loadModels());
+        Mockito.when(cacheService.getDroneStates()).thenReturn(TestConstants.loadStatus());
+
+        List<Drone> drones
+                = List.of(
+                        new Drone("4001", cacheService.getDroneModels().get("Lightweight"), 150, 95, cacheService.getDroneStates().get("IDLE")),
+                        new Drone("4002", cacheService.getDroneModels().get("Middleweight"), 250, 75, cacheService.getDroneStates().get("IDLE")),
+                        new Drone("4003", cacheService.getDroneModels().get("Middleweight"), 250, 90, cacheService.getDroneStates().get("LOADED")),
+                        new Drone("4004", cacheService.getDroneModels().get("Lightweight"), 150, 100, cacheService.getDroneStates().get("IDLE")),
+                        new Drone("4005", cacheService.getDroneModels().get("Lightweight"), 100, 25, cacheService.getDroneStates().get("DELIVERED")),
+                        new Drone("4006", cacheService.getDroneModels().get("Heavyweight"), 500, 45, cacheService.getDroneStates().get("RETURNING")),
+                        new Drone("4007", cacheService.getDroneModels().get("Cruiserweight"), 400, 60, cacheService.getDroneStates().get("IDLE"))
+                );
+
+        Mockito.when(droneRepository.findAll()).thenReturn(drones);
+        droneService.checkDroneBatteryLevel();
+        Mockito.verify(droneAuditRepository, Mockito.times(1)).saveAll(Mockito.anyList());
+    }
+
+    @Test
+    @DisplayName("Unit Test => Test the functionality to checkDroneBatteryLevel - exception")
+    void testCheckDroneBatteryLevel_exception() throws Exception {
+        Mockito.when(droneRepository.findAll()).thenReturn(new ArrayList<>());
+        Exception exception =
+                Assertions.assertThrows(
+                        Exception.class,
+                        () -> droneService.checkDroneBatteryLevel()
+                );
+        Assertions.assertEquals(AppConstants.SCHEDULE_NO_DRONE_FOUND, exception.getMessage());
     }
 
     private Drone getDrone() {

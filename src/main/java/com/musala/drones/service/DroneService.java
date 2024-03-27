@@ -24,4 +24,5 @@ public interface DroneService {
     ResponseDTO changeStatus(DroneStatusChangeRequestDTO droneStatusChangeRequestDTO) throws DroneStatusException;
     List<AvailableDroneDTO> findIdleDrones() throws DroneSearchException;
     Integer getDroneBatteryLevel(String serialNumber) throws DroneSearchException;
+    void checkDroneBatteryLevel() throws Exception;
 }
