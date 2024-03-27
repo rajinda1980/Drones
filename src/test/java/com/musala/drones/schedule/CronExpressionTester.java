@@ -16,7 +16,7 @@ import java.time.temporal.ChronoUnit;
  * @version 1.0
  * @since 27/03/2024
  */
-@SpringBootTest(properties = "0 */2 * * * ?")
+@SpringBootTest(properties = "0 */2 * * *")
 public class CronExpressionTester {
 
     @SpyBean
